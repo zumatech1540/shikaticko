@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Connecting to M-Pesa | ShikaTicko</title>
+
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f4f7fb;
+            font-family: Arial, sans-serif;
+        }
+
+        .payment-card {
+            background: white;
+            width: 90%;
+            max-width: 430px;
+            padding: 35px 25px;
+            text-align: center;
+            border-radius: 18px;
+            box-shadow: 0 10px 35px rgba(0,0,0,0.08);
+        }
+
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #e5e7eb;
+            border-top-color: #198754;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        h2 {
+            color: #198754;
+        }
+
+        p {
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        button {
+            background: #198754;
+            color: white;
+            border: none;
+            padding: 13px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="payment-card">
+
+    <h2>ShikaTicko</h2>
+
+    <div class="loader"></div>
+
+    <h3>Connecting to M-Pesa</h3>
+
+    <p>
+        Your order has been created successfully.
+        We are preparing your M-Pesa payment request.
+    </p>
+
+    <p>
+        Order Reference:
+        <strong>{{ order.reference }}</strong>
+    </p>
+
+    <p>
+        Amount:
+        <strong>{{ order.currency }} {{ order.total_amount }}</strong>
+    </p>
+
+    <form
+        method="POST"
+        action="{% url 'payments:mpesa_initiate' order_reference=order.reference %}"
+        id="mpesaForm"
+    >
+
+        {% csrf_token %}
+
+        <button type="submit">
+            Continue to M-Pesa
+        </button>
+
+    </form>
+
+</div>
+
+<script>
+    window.addEventListener('load', function () {
+
+        setTimeout(function () {
+
+            document.getElementById('mpesaForm').submit();
+
+        }, 1200);
+
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,256 @@
+ 
+{% extends 'base.html' %}
+
+{% block title %}Review Events | EventHub{% endblock %}
+
+{% block content %}
+
+<style>
+    .review-page {
+        background: #f5f7fb;
+        min-height: 100vh;
+    }
+
+    .review-card {
+        border: 0;
+        border-radius: 16px;
+        overflow: hidden;
+    }
+
+    .event-poster {
+        width: 75px;
+        height: 65px;
+        object-fit: cover;
+        border-radius: 10px;
+    }
+
+    .review-table th {
+        font-size: .78rem;
+        color: #64748b;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .review-table td {
+        vertical-align: middle;
+    }
+
+    .review-actions {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    @media(max-width: 767px) {
+        .review-table {
+            min-width: 850px;
+        }
+    }
+</style>
+
+<div class="review-page py-4">
+    <div class="container-fluid px-lg-4">
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+            <div>
+                <h2 class="fw-bold mb-1">Events Awaiting Approval</h2>
+                <p class="text-muted mb-0">
+                    Review organizer submissions before publishing them on EventHub.
+                </p>
+            </div>
+
+            <a href="{% url 'accounts:admin_dashboard' %}"
+               class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>
+                Back to Dashboard
+            </a>
+        </div>
+
+        <div class="row g-3 mb-4">
+
+            <div class="col-md-4">
+                <div class="card review-card shadow-sm">
+                    <div class="card-body">
+                        <div class="text-muted small">Awaiting Review</div>
+                        <h2 class="fw-bold text-warning mb-0">
+                            {{ pending_events.count }}
+                        </h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card review-card shadow-sm">
+                    <div class="card-body">
+                        <div class="text-muted small">Review Process</div>
+                        <h5 class="fw-bold mb-0">Administrator Approval</h5>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card review-card shadow-sm">
+                    <div class="card-body">
+                        <div class="text-muted small">Platform</div>
+                        <h5 class="fw-bold text-success mb-0">EventHub</h5>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="card review-card shadow-sm">
+
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0">
+                    <i class="bi bi-clipboard-check text-success me-2"></i>
+                    Submitted Events
+                </h5>
+            </div>
+
+            <div class="card-body p-0">
+
+                <div class="table-responsive">
+                    <table class="table table-hover review-table mb-0">
+
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-3">Event</th>
+                                <th>Organizer</th>
+                                <th>Category</th>
+                                <th>Event Date</th>
+                                <th>Submitted</th>
+                                <th class="text-end pe-3">Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {% for event in pending_events %}
+
+                            <tr>
+                                <td class="ps-3">
+                                    <div class="d-flex align-items-center gap-2">
+
+                                        {% if event.cover_image %}
+                                            <img src="{{ event.cover_image.url }}"
+                                                 class="event-poster"
+                                                 alt="{{ event.title }}">
+                                        {% else %}
+                                            <div class="event-poster bg-light d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-calendar-event fs-3 text-muted"></i>
+                                            </div>
+                                        {% endif %}
+
+                                        <div>
+                                            <div class="fw-bold">
+                                                {{ event.title }}
+                                            </div>
+                                            <small class="text-muted">
+                                                {{ event.get_event_type_display }}
+                                            </small>
+                                        </div>
+
+                                    </div>
+                                </td>
+
+                                <td>
+                                    {{ event.organizer.get_full_name|default:event.organizer.username }}
+                                </td>
+
+                                <td>
+                                    {{ event.category|default:"Uncategorized" }}
+                                </td>
+
+                                <td>
+                                    {{ event.start_datetime|date:"d M Y, H:i" }}
+                                </td>
+
+                                <td>
+                                    {% if event.submitted_at %}
+                                        {{ event.submitted_at|date:"d M Y" }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+
+                                <td class="text-end pe-3">
+                                    <div class="review-actions justify-content-end">
+
+                                        <form method="POST"
+                                              action="{% url 'events:review_event' event.pk %}">
+                                            {% csrf_token %}
+
+                                            <input type="hidden"
+                                                   name="decision"
+                                                   value="approve">
+
+                                            <button type="submit"
+                                                    class="btn btn-success btn-sm">
+                                                <i class="bi bi-check-circle me-1"></i>
+                                                Approve
+                                            </button>
+                                        </form>
+
+                                        <a href="{% url 'events:edit_event' event.pk %}"
+                                           class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-pencil me-1"></i>
+                                            Edit
+                                        </a>
+
+                                        <form method="POST"
+                                              action="{% url 'events:review_event' event.pk %}"
+                                              onsubmit="return confirm('Are you sure you want to reject this event?');">
+                                            {% csrf_token %}
+
+                                            <input type="hidden"
+                                                   name="decision"
+                                                   value="reject">
+
+                                            <input type="hidden"
+                                                   name="rejection_reason"
+                                                   value="The event requires changes before approval.">
+
+                                            <button type="submit"
+                                                    class="btn btn-outline-danger btn-sm">
+                                                <i class="bi bi-x-circle me-1"></i>
+                                                Reject
+                                            </button>
+                                        </form>
+
+                                    </div>
+                                </td>
+                            </tr>
+
+                            {% empty %}
+
+                            <tr>
+                                <td colspan="6" class="text-center py-5">
+
+                                    <i class="bi bi-check-circle text-success fs-1"></i>
+
+                                    <h5 class="fw-bold mt-3">
+                                        No Pending Events
+                                    </h5>
+
+                                    <p class="text-muted mb-0">
+                                        All event submissions have been reviewed.
+                                    </p>
+
+                                </td>
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

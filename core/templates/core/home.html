@@ -1,0 +1,1082 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Discover Events | EventHub{% endblock %}
+
+{% block content %}
+
+<style>
+    .home-hero {
+        position: relative;
+        overflow: hidden;
+        padding: 90px 0;
+        color: #fff;
+        background: linear-gradient(120deg, #102a43, #146c43);
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-label,
+    .section-eyebrow {
+        display: inline-block;
+        font-size: .75rem;
+        font-weight: 800;
+        letter-spacing: 2px;
+        color: #198754;
+        margin-bottom: 12px;
+    }
+
+    .hero-label {
+        color: #a7f3d0;
+    }
+
+    .home-hero h1 {
+        font-size: clamp(2.6rem, 5vw, 4.5rem);
+        font-weight: 900;
+        line-height: 1.08;
+        margin: 15px 0;
+    }
+
+    .home-hero h1 span {
+        color: #a7f3d0;
+    }
+
+    .hero-description {
+        max-width: 570px;
+        color: rgba(255,255,255,.8);
+        font-size: 1.05rem;
+        line-height: 1.8;
+    }
+
+    .hero-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 28px;
+    }
+
+    .hero-primary-btn {
+        background: #fff;
+        color: #146c43;
+        border-radius: 9px;
+        padding: 13px 23px;
+        font-weight: 700;
+    }
+
+    .hero-primary-btn:hover {
+        background: #a7f3d0;
+        color: #102a43;
+    }
+
+    .hero-outline-btn {
+        color: #fff;
+        border: 1px solid rgba(255,255,255,.6);
+        border-radius: 9px;
+        padding: 13px 23px;
+        font-weight: 700;
+    }
+
+    .hero-outline-btn:hover {
+        background: #fff;
+        color: #146c43;
+    }
+
+    .hero-trust {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 22px;
+        margin-top: 30px;
+        color: rgba(255,255,255,.85);
+        font-size: .88rem;
+    }
+
+    .hero-trust i {
+        color: #a7f3d0;
+        margin-right: 6px;
+    }
+
+    .hero-ticket-card {
+        max-width: 390px;
+        margin: 20px auto;
+        background: #fff;
+        color: #172033;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 25px 60px rgba(0,0,0,.2);
+        transform: rotate(2deg);
+    }
+
+    .hero-ticket-image {
+        height: 210px;
+        background:
+            linear-gradient(rgba(16,42,67,.15), rgba(16,42,67,.15)),
+            url("{% static 'images/event-hero.jpg' %}") center/cover,
+            linear-gradient(135deg, #198754, #102a43);
+    }
+
+    .hero-ticket-content {
+        padding: 25px;
+    }
+
+    .ticket-tag {
+        font-size: .7rem;
+        font-weight: 800;
+        color: #198754;
+        letter-spacing: 1.5px;
+    }
+
+    .hero-ticket-content h3 {
+        font-weight: 800;
+        margin-top: 10px;
+    }
+
+    .hero-ticket-content p {
+        color: #64748b;
+        line-height: 1.7;
+    }
+
+    .hero-ticket-content a {
+        color: #198754;
+        text-decoration: none;
+        font-weight: 700;
+    }
+
+    .announcement-bar {
+        overflow: hidden;
+        background: #102a43;
+        color: #fff;
+        padding: 14px 0;
+    }
+
+    .announcement-track {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        gap: 15px;
+        font-size: .85rem;
+        font-weight: 600;
+    }
+
+    .announcement-track i {
+        color: #a7f3d0;
+        margin-right: 6px;
+    }
+
+    .section-padding {
+        padding: 75px 0;
+    }
+
+    .section-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 20px;
+        margin-bottom: 35px;
+    }
+
+    .section-heading h2 {
+        font-weight: 850;
+        color: #172033;
+        margin-bottom: 8px;
+    }
+
+    .section-heading p {
+        color: #64748b;
+        margin-bottom: 0;
+    }
+
+    .section-link {
+        color: #198754;
+        text-decoration: none;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .category-card {
+        display: block;
+        text-decoration: none;
+        color: #fff;
+        padding: 25px;
+        border-radius: 16px;
+        min-height: 175px;
+        transition: .25s ease;
+    }
+
+    .category-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,.12);
+        color: #fff;
+    }
+
+    .category-icon {
+        font-size: 2rem;
+        margin-bottom: 18px;
+    }
+
+    .category-card h5 {
+        font-weight: 800;
+        margin-bottom: 7px;
+    }
+
+    .category-card span {
+        font-size: .83rem;
+        opacity: .85;
+    }
+
+    .category-music {
+        background: linear-gradient(135deg, #7c3aed, #4c1d95);
+    }
+
+    .category-sports {
+        background: linear-gradient(135deg, #ea580c, #9a3412);
+    }
+
+    .category-business {
+        background: linear-gradient(135deg, #0f766e, #134e4a);
+    }
+
+    .category-social {
+        background: linear-gradient(135deg, #db2777, #831843);
+    }
+
+    .featured-events {
+        background: #f5f7fb;
+    }
+
+    .event-card {
+        background: #fff;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 5px 20px rgba(0,0,0,.05);
+        transition: .25s ease;
+        border: 1px solid #edf0f5;
+    }
+
+    .event-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,.1);
+    }
+
+    .event-card-image {
+        position: relative;
+        height: 220px;
+        overflow: hidden;
+        background: #e9eef3;
+    }
+
+    .event-card-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform .4s ease;
+    }
+
+    .event-card:hover .event-card-image img {
+        transform: scale(1.05);
+    }
+
+    .event-image-placeholder {
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #198754;
+        font-size: 4rem;
+        background: linear-gradient(135deg, #e8f5ee, #dbeafe);
+    }
+
+    .event-status-badge {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        padding: 7px 12px;
+        border-radius: 30px;
+        background: #198754;
+        color: #fff;
+        font-size: .72rem;
+        font-weight: 700;
+    }
+
+    .event-card-body {
+        padding: 22px;
+    }
+
+    .event-card-category {
+        color: #198754;
+        font-size: .75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 9px;
+    }
+
+    .event-card-body h4 {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: #172033;
+        margin-bottom: 10px;
+    }
+
+    .event-short-description {
+        color: #64748b;
+        font-size: .9rem;
+        line-height: 1.6;
+        min-height: 45px;
+    }
+
+    .event-card-details {
+        border-top: 1px solid #edf0f5;
+        border-bottom: 1px solid #edf0f5;
+        padding: 14px 0;
+        margin: 15px 0;
+        display: grid;
+        gap: 9px;
+        color: #526174;
+        font-size: .85rem;
+    }
+
+    .event-card-details i {
+        color: #198754;
+        width: 20px;
+    }
+
+    .event-card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .event-entry-type {
+        font-size: .78rem;
+    }
+
+    .event-card-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-top: 17px;
+    }
+
+    .event-card-actions .btn {
+        flex: 1;
+        min-width: 110px;
+        border-radius: 8px;
+        font-size: .82rem;
+        font-weight: 700;
+        padding: 9px 10px;
+    }
+
+    .event-view-btn {
+        color: #198754;
+        border: 1px solid #198754;
+        background: #fff;
+    }
+
+    .event-view-btn:hover {
+        background: #e8f5ee;
+        color: #146c43;
+    }
+
+    .event-book-btn {
+        background: #198754;
+        border: 1px solid #198754;
+        color: #fff;
+    }
+
+    .event-book-btn:hover {
+        background: #146c43;
+        border-color: #146c43;
+        color: #fff;
+    }
+
+    .events-empty-state {
+        text-align: center;
+        background: #fff;
+        padding: 55px 20px;
+        border-radius: 18px;
+        border: 1px dashed #cbd5e1;
+    }
+
+    .empty-event-icon {
+        font-size: 3.5rem;
+        color: #198754;
+        margin-bottom: 15px;
+    }
+
+    .empty-event-btn {
+        background: #198754;
+        color: #fff;
+        padding: 11px 22px;
+        border-radius: 9px;
+        font-weight: 700;
+    }
+
+    .how-it-works {
+        background: #fff;
+    }
+
+    .centered-heading {
+        display: block;
+        text-align: center;
+    }
+
+    .process-card {
+        position: relative;
+        text-align: center;
+        padding: 30px 22px;
+        border: 1px solid #edf0f5;
+        border-radius: 16px;
+        height: 100%;
+    }
+
+    .process-number {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        font-size: 1.4rem;
+        font-weight: 900;
+        color: #e2e8f0;
+    }
+
+    .process-icon {
+        color: #198754;
+        font-size: 2.5rem;
+        margin-bottom: 18px;
+    }
+
+    .process-card h4 {
+        font-weight: 800;
+    }
+
+    .process-card p {
+        color: #64748b;
+        margin-bottom: 0;
+        line-height: 1.7;
+    }
+
+    .organizer-section {
+        padding: 75px 0;
+        background: linear-gradient(120deg, #102a43, #146c43);
+        color: #fff;
+    }
+
+    .organizer-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 35px;
+    }
+
+    .organizer-text {
+        max-width: 650px;
+    }
+
+    .organizer-text h2 {
+        font-size: clamp(2rem, 4vw, 3rem);
+        font-weight: 850;
+    }
+
+    .organizer-text p {
+        color: rgba(255,255,255,.8);
+        line-height: 1.8;
+    }
+
+    .organizer-btn {
+        background: #fff;
+        color: #146c43;
+        border-radius: 9px;
+        padding: 12px 22px;
+        font-weight: 700;
+        margin-top: 12px;
+    }
+
+    .organizer-btn:hover {
+        background: #a7f3d0;
+        color: #102a43;
+    }
+
+    .organizer-graphic {
+        width: 230px;
+        height: 230px;
+        border-radius: 50%;
+        border: 2px dashed rgba(255,255,255,.5);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-weight: 800;
+        color: #a7f3d0;
+        transform: rotate(-7deg);
+    }
+
+    .organizer-graphic i {
+        font-size: 3.5rem;
+    }
+
+    .final-cta {
+        padding: 75px 0;
+        background: #f5f7fb;
+    }
+
+    .final-cta h2 {
+        font-weight: 850;
+        color: #172033;
+        margin-bottom: 12px;
+    }
+
+    .final-cta p {
+        color: #64748b;
+    }
+
+    .final-cta-btn {
+        margin-top: 15px;
+        background: #198754;
+        color: #fff;
+        border-radius: 9px;
+        padding: 13px 24px;
+        font-weight: 700;
+    }
+
+    .final-cta-btn:hover {
+        background: #146c43;
+        color: #fff;
+    }
+
+    @media(max-width: 767px) {
+        .home-hero {
+            padding: 65px 0;
+        }
+
+        .hero-ticket-card {
+            transform: none;
+        }
+
+        .hero-trust {
+            gap: 12px;
+            flex-direction: column;
+        }
+
+        .announcement-track {
+            justify-content: flex-start;
+            padding: 0 15px;
+        }
+
+        .section-padding {
+            padding: 55px 0;
+        }
+
+        .section-heading {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .event-card-image {
+            height: 200px;
+        }
+
+        .organizer-content {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .organizer-graphic {
+            width: 180px;
+            height: 180px;
+            align-self: center;
+        }
+    }
+</style>
+
+<!-- HERO SECTION -->
+<section class="home-hero">
+    <div class="container hero-content">
+        <div class="row align-items-center">
+
+            <div class="col-lg-7">
+                <span class="hero-label">
+                    <i class="bi bi-stars"></i>
+                    YOUR EVENTS. YOUR EXPERIENCES.
+                </span>
+
+                <h1>
+                    Discover Events.<br>
+                    <span>Experience More.</span>
+                </h1>
+
+                <p class="hero-description">
+                    Find exciting events, book your tickets and create
+                    unforgettable memories. Everything happening around
+                    you, all in one place.
+                </p>
+
+                <div class="hero-buttons">
+                    <a href="{% url 'core:competitions' %}"
+                       class="btn hero-primary-btn">
+                        Explore Events
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+
+                    <a href="{% url 'accounts:organizer_register' %}"
+                       class="btn hero-outline-btn">
+                        <i class="bi bi-calendar-plus"></i>
+                        Organize an Event
+                    </a>
+                </div>
+
+                <div class="hero-trust">
+                    <div>
+                        <i class="bi bi-ticket-perforated"></i>
+                        Easy ticket booking
+                    </div>
+
+                    <div>
+                        <i class="bi bi-shield-check"></i>
+                        Secure payments
+                    </div>
+
+                    <div>
+                        <i class="bi bi-qr-code"></i>
+                        Digital tickets
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="hero-ticket-card">
+                    <div class="hero-ticket-image"></div>
+
+                    <div class="hero-ticket-content">
+                        <span class="ticket-tag">YOUR NEXT EXPERIENCE</span>
+
+                        <h3>Make Every Moment Count</h3>
+
+                        <p>
+                            Discover concerts, festivals, competitions,
+                            conferences and more.
+                        </p>
+
+                        <a href="{% url 'core:competitions' %}">
+                            Discover what's happening
+                            <i class="bi bi-arrow-up-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ANNOUNCEMENT BAR -->
+<section class="announcement-bar">
+    <div class="announcement-track">
+        <span><i class="bi bi-lightning-charge-fill"></i> Discover exciting events</span>
+        <span><i class="bi bi-ticket-perforated-fill"></i> Book your tickets online</span>
+        <span><i class="bi bi-qr-code"></i> Enjoy convenient digital tickets</span>
+        <span><i class="bi bi-calendar-event-fill"></i> Create and promote your events</span>
+    </div>
+</section>
+
+<!-- CATEGORY SECTION -->
+<section class="home-categories section-padding">
+    <div class="container">
+
+        <div class="section-heading">
+            <div>
+                <span class="section-eyebrow">EXPLORE AND DISCOVER</span>
+                <h2>Explore Events by Category</h2>
+                <p>Find experiences that match your interests.</p>
+            </div>
+
+            <a href="{% url 'core:competitions' %}" class="section-link">
+                View all events <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="row g-4">
+
+            <div class="col-6 col-md-4 col-lg-3">
+                <a href="{% url 'core:competitions' %}"
+                   class="category-card category-music">
+                    <div class="category-icon">
+                        <i class="bi bi-music-note-beamed"></i>
+                    </div>
+                    <h5>Music & Concerts</h5>
+                    <span>Live performances and festivals</span>
+                </a>
+            </div>
+
+            <div class="col-6 col-md-4 col-lg-3">
+                <a href="{% url 'core:competitions' %}"
+                   class="category-card category-sports">
+                    <div class="category-icon">
+                        <i class="bi bi-trophy"></i>
+                    </div>
+                    <h5>Sports & Competitions</h5>
+                    <span>Games, tournaments and races</span>
+                </a>
+            </div>
+
+            <div class="col-6 col-md-4 col-lg-3">
+                <a href="{% url 'core:competitions' %}"
+                   class="category-card category-business">
+                    <div class="category-icon">
+                        <i class="bi bi-briefcase"></i>
+                    </div>
+                    <h5>Business & Conferences</h5>
+                    <span>Networking and professional events</span>
+                </a>
+            </div>
+
+            <div class="col-6 col-md-4 col-lg-3">
+                <a href="{% url 'core:competitions' %}"
+                   class="category-card category-social">
+                    <div class="category-icon">
+                        <i class="bi bi-balloon"></i>
+                    </div>
+                    <h5>Social Events</h5>
+                    <span>Celebrations and special occasions</span>
+                </a>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- FEATURED EVENTS -->
+<section class="featured-events section-padding">
+    <div class="container">
+
+        <div class="section-heading">
+            <div>
+                <span class="section-eyebrow">DON'T MISS OUT</span>
+                <h2>Discover Upcoming Events</h2>
+                <p>Find your next memorable experience.</p>
+            </div>
+
+            <a href="{% url 'core:competitions' %}" class="section-link">
+                Explore all events <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        {% if featured_events %}
+
+        <div class="row g-4">
+            {% for event in featured_events %}
+
+            <div class="col-md-6 col-lg-4">
+                <div class="event-card h-100">
+
+                    <div class="event-card-image">
+                        {% if event.cover_image %}
+                            <img src="{{ event.cover_image.url }}"
+                                 alt="{{ event.title }}">
+                        {% else %}
+                            <div class="event-image-placeholder">
+                                <i class="bi bi-calendar-event"></i>
+                            </div>
+                        {% endif %}
+
+                        <span class="event-status-badge">
+                            <i class="bi bi-star-fill me-1"></i>
+                            Featured Event
+                        </span>
+                    </div>
+
+                    <div class="event-card-body">
+
+                        <div class="event-card-category">
+                            {{ event.category.name|default:"General Event" }}
+                        </div>
+
+                        <h4>{{ event.title }}</h4>
+
+                        <p class="event-short-description">
+                            {{ event.short_description|truncatewords:20 }}
+                        </p>
+
+                        <div class="event-card-details">
+                            <div>
+                                <i class="bi bi-calendar3"></i>
+                                {{ event.start_datetime|date:"d M Y" }}
+                            </div>
+
+                            <div>
+                                <i class="bi bi-clock"></i>
+                                {{ event.start_datetime|date:"g:i A" }}
+                            </div>
+
+                            <div>
+                                <i class="bi bi-geo-alt"></i>
+                                {% if event.event_type == 'online' %}
+                                    Online Event
+                                {% else %}
+                                    {{ event.venue_name|default:event.town|default:"Venue to be announced" }}
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="event-card-footer">
+                            <span class="event-entry-type">
+                                {% if event.entry_type == 'free' %}
+                                    <span class="text-success fw-bold">FREE ENTRY</span>
+                                {% else %}
+                                    <span class="text-primary fw-bold">TICKETED EVENT</span>
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <div class="event-card-actions">
+                            <a href="{% url 'events:event_detail' event.slug %}"
+                               class="btn event-view-btn">
+                                <i class="bi bi-eye me-1"></i>
+                                View Details
+                            </a>
+
+                            <a href="{% url 'events:event_booking' event.slug %}"
+                               class="btn event-book-btn">
+                                <i class="bi bi-ticket-perforated me-1"></i>
+                                {% if event.entry_type == 'free' %}
+                                    Get Ticket
+                                {% else %}
+                                    Book Tickets
+                                {% endif %}
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            {% endfor %}
+        </div>
+
+        {% elif upcoming_events %}
+
+        <div class="row g-4">
+            {% for event in upcoming_events %}
+
+            <div class="col-md-6 col-lg-4">
+                <div class="event-card h-100">
+
+                    <div class="event-card-image">
+                        {% if event.cover_image %}
+                            <img src="{{ event.cover_image.url }}"
+                                 alt="{{ event.title }}">
+                        {% else %}
+                            <div class="event-image-placeholder">
+                                <i class="bi bi-calendar-event"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="event-card-body">
+
+                        <div class="event-card-category">
+                            {{ event.category.name|default:"General Event" }}
+                        </div>
+
+                        <h4>{{ event.title }}</h4>
+
+                        <p class="event-short-description">
+                            {{ event.short_description|truncatewords:20 }}
+                        </p>
+
+                        <div class="event-card-details">
+                            <div>
+                                <i class="bi bi-calendar3"></i>
+                                {{ event.start_datetime|date:"d M Y" }}
+                            </div>
+
+                            <div>
+                                <i class="bi bi-clock"></i>
+                                {{ event.start_datetime|date:"g:i A" }}
+                            </div>
+
+                            <div>
+                                <i class="bi bi-geo-alt"></i>
+                                {% if event.event_type == 'online' %}
+                                    Online Event
+                                {% else %}
+                                    {{ event.venue_name|default:event.town|default:"Venue to be announced" }}
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="event-card-footer">
+                            <span class="event-entry-type">
+                                {% if event.entry_type == 'free' %}
+                                    <span class="text-success fw-bold">FREE ENTRY</span>
+                                {% else %}
+                                    <span class="text-primary fw-bold">TICKETED EVENT</span>
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <div class="event-card-actions">
+                            <a href="{% url 'events:event_detail' event.slug %}"
+                               class="btn event-view-btn">
+                                <i class="bi bi-eye me-1"></i>
+                                View Details
+                            </a>
+
+                            <a href="{% url 'events:event_booking' event.slug %}"
+                               class="btn event-book-btn">
+                                <i class="bi bi-ticket-perforated me-1"></i>
+                                {% if event.entry_type == 'free' %}
+                                    Get Ticket
+                                {% else %}
+                                    Book Tickets
+                                {% endif %}
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            {% endfor %}
+        </div>
+
+        {% else %}
+
+        <div class="events-empty-state">
+            <div class="empty-event-icon">
+                <i class="bi bi-calendar2-event"></i>
+            </div>
+
+            <h4>Exciting Events Are Coming</h4>
+
+            <p class="text-muted">
+                We are preparing exciting experiences for you.
+                Check back soon to discover events and book your tickets.
+            </p>
+
+            <a href="{% url 'core:competitions' %}"
+               class="btn empty-event-btn">
+                Browse Events
+            </a>
+        </div>
+
+        {% endif %}
+
+    </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-it-works section-padding">
+    <div class="container">
+
+        <div class="section-heading centered-heading">
+            <span class="section-eyebrow">SIMPLE AND CONVENIENT</span>
+            <h2>Your Next Event Is Just a Few Steps Away</h2>
+            <p>We've made discovering and attending events easier.</p>
+        </div>
+
+        <div class="row g-4">
+
+            <div class="col-md-4">
+                <div class="process-card">
+                    <div class="process-number">01</div>
+                    <div class="process-icon">
+                        <i class="bi bi-search"></i>
+                    </div>
+                    <h4>Discover</h4>
+                    <p>
+                        Browse events and find the experiences that interest you.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="process-card">
+                    <div class="process-number">02</div>
+                    <div class="process-icon">
+                        <i class="bi bi-credit-card"></i>
+                    </div>
+                    <h4>Book Your Ticket</h4>
+                    <p>
+                        Select your ticket type and complete your booking securely online.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="process-card">
+                    <div class="process-number">03</div>
+                    <div class="process-icon">
+                        <i class="bi bi-qr-code-scan"></i>
+                    </div>
+                    <h4>Attend & Enjoy</h4>
+                    <p>
+                        Receive your digital ticket and present its QR code at the event entrance.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ORGANIZER SECTION -->
+<section class="organizer-section">
+    <div class="container">
+        <div class="organizer-content">
+
+            <div class="organizer-text">
+                <span class="section-eyebrow text-white">
+                    FOR EVENT ORGANIZERS
+                </span>
+
+                <h2>Have an Event to Organize?</h2>
+
+                <p>
+                    Bring your event to life. Create events, manage ticket
+                    sales, monitor attendance and grow your audience
+                    using one convenient platform.
+                </p>
+
+                <a href="{% url 'accounts:organizer_register' %}"
+                   class="btn organizer-btn">
+                    Start Organizing
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="organizer-graphic">
+                <i class="bi bi-calendar2-check"></i>
+                <span>CREATE</span>
+                <span>SELL TICKETS</span>
+                <span>MANAGE</span>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+    <div class="container text-center">
+        <span class="section-eyebrow">LET THE EXPERIENCE BEGIN</span>
+
+        <h2>Where Will Your Next Experience Take You?</h2>
+
+        <p>
+            Explore events, connect with people and make memories
+            that last.
+        </p>
+
+        <a href="{% url 'core:competitions' %}"
+           class="btn final-cta-btn">
+            Find Your Next Event
+            <i class="bi bi-arrow-right"></i>
+        </a>
+    </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,1456 @@
+
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if is_edit %}Edit Event{% else %}Create Event{% endif %} | EventHub
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .event-form-page {
+        background: #f5f7fb;
+        min-height: 100vh;
+        padding: 45px 0 70px;
+    }
+
+    .event-form-header {
+        margin-bottom: 30px;
+    }
+
+    .event-back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #198754;
+        text-decoration: none;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+
+    .event-back-link:hover {
+        color: #146c43;
+    }
+
+    .section-kicker {
+        display: block;
+        color: #198754;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        margin-bottom: 10px;
+    }
+
+    .event-form-header h1 {
+        font-size: clamp(28px, 4vw, 38px);
+        font-weight: 800;
+        color: #172b4d;
+        margin-bottom: 10px;
+    }
+
+    .event-form-header p {
+        color: #64748b;
+        margin: 0;
+        font-size: 15px;
+    }
+
+    .event-form-card {
+        background: #fff;
+        border-radius: 18px;
+        padding: 35px;
+        box-shadow: 0 8px 35px rgba(15, 23, 42, .06);
+        border: 1px solid #e9edf3;
+    }
+
+    .event-form-section {
+        padding-bottom: 32px;
+        margin-bottom: 32px;
+        border-bottom: 1px solid #edf0f5;
+    }
+
+    .event-form-section:last-of-type {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+
+    .event-form-section-heading {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .form-section-icon {
+        width: 48px;
+        height: 48px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #e9f7ef;
+        color: #198754;
+        border-radius: 13px;
+        font-size: 22px;
+    }
+
+    .event-form-section-heading h2 {
+        font-size: 19px;
+        font-weight: 750;
+        color: #172b4d;
+        margin: 0 0 5px;
+    }
+
+    .event-form-section-heading p {
+        font-size: 13px;
+        color: #8792a2;
+        margin: 0;
+    }
+
+    .event-form-page .form-label {
+        font-size: 13px;
+        font-weight: 700;
+        color: #334155;
+        margin-bottom: 8px;
+    }
+
+    .event-form-page .form-control,
+    .event-form-page .form-select {
+        border: 1px solid #dce2eb;
+        border-radius: 9px;
+        padding: 11px 13px;
+        font-size: 14px;
+        min-height: 45px;
+        box-shadow: none;
+    }
+
+    .event-form-page textarea.form-control {
+        min-height: 110px;
+    }
+
+    .event-form-page .form-control:focus,
+    .event-form-page .form-select:focus {
+        border-color: #198754;
+        box-shadow: 0 0 0 3px rgba(25, 135, 84, .10);
+    }
+
+    .form-text {
+        display: block;
+        color: #8994a5;
+        font-size: 12px;
+        margin-top: 6px;
+    }
+
+    .current-event-poster {
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .current-event-poster img {
+        width: 150px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .current-event-poster span {
+        font-size: 13px;
+        color: #64748b;
+    }
+
+    /* TICKET CATEGORY SECTION */
+
+    .ticket-section-intro {
+        background: #f0fdf4;
+        border: 1px solid #d1fae5;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 22px;
+    }
+
+    .ticket-section-intro strong {
+        display: block;
+        color: #166534;
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+
+    .ticket-section-intro p {
+        color: #47745a;
+        font-size: 13px;
+        margin: 0;
+    }
+
+    .ticket-category-card {
+        background: #fff;
+        border: 1px solid #e1e7ef;
+        border-radius: 14px;
+        padding: 22px;
+        margin-bottom: 18px;
+        position: relative;
+        transition: .2s ease;
+    }
+
+    .ticket-category-card:hover {
+        border-color: #a7d8bb;
+        box-shadow: 0 5px 18px rgba(25, 135, 84, .06);
+    }
+
+    .ticket-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid #edf0f5;
+    }
+
+    .ticket-card-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #172b4d;
+        font-weight: 750;
+        font-size: 15px;
+    }
+
+    .ticket-card-title i {
+        color: #198754;
+        font-size: 19px;
+    }
+
+    .ticket-remove-btn {
+        border: 1px solid #fecaca;
+        background: #fff;
+        color: #dc3545;
+        border-radius: 8px;
+        padding: 7px 11px;
+        font-size: 12px;
+        font-weight: 700;
+        transition: .2s;
+    }
+
+    .ticket-remove-btn:hover {
+        background: #dc3545;
+        color: #fff;
+    }
+
+    .ticket-add-btn {
+        width: 100%;
+        padding: 13px;
+        border: 2px dashed #a7d8bb;
+        border-radius: 11px;
+        background: #f8fffa;
+        color: #198754;
+        font-weight: 750;
+        font-size: 14px;
+        transition: .2s;
+    }
+
+    .ticket-add-btn:hover {
+        background: #e9f7ef;
+        border-color: #198754;
+    }
+
+    .ticket-category-card .form-check {
+        padding-top: 8px;
+    }
+
+    .ticket-category-card .form-check-input {
+        width: 18px;
+        height: 18px;
+        margin-top: 2px;
+    }
+
+    .ticket-category-card .form-check-input:checked {
+        background-color: #198754;
+        border-color: #198754;
+    }
+
+    .ticket-category-card .form-check-label {
+        font-size: 13px;
+        font-weight: 650;
+        color: #475569;
+        margin-left: 5px;
+    }
+
+    .ticket-free-notice {
+        display: none;
+        background: #fff8e6;
+        border: 1px solid #f5dfa1;
+        color: #805b00;
+        border-radius: 9px;
+        padding: 12px 15px;
+        font-size: 13px;
+        margin-top: 15px;
+    }
+
+    .ticket-form-errors {
+        background: #fff1f2;
+        border: 1px solid #fecdd3;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 20px;
+        color: #be123c;
+        font-size: 13px;
+    }
+
+    .ticket-form-errors ul {
+        margin-bottom: 0;
+        padding-left: 20px;
+    }
+
+    .ticket-hidden {
+        display: none !important;
+    }
+
+    /* ACTIONS */
+
+    .event-form-actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding-top: 25px;
+        margin-top: 20px;
+        border-top: 1px solid #edf0f5;
+    }
+
+    .event-cancel-btn,
+    .event-save-draft-btn,
+    .event-submit-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 20px;
+        border-radius: 9px;
+        font-size: 13px;
+        font-weight: 750;
+        text-decoration: none;
+        border: none;
+        transition: .2s;
+        cursor: pointer;
+    }
+
+    .event-cancel-btn {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .event-cancel-btn:hover {
+        background: #e2e8f0;
+        color: #172b4d;
+    }
+
+    .event-save-draft-btn {
+        background: #fff;
+        color: #198754;
+        border: 1px solid #198754;
+    }
+
+    .event-save-draft-btn:hover {
+        background: #e9f7ef;
+    }
+
+    .event-submit-btn {
+        background: #198754;
+        color: #fff;
+    }
+
+    .event-submit-btn:hover {
+        background: #146c43;
+        color: #fff;
+    }
+
+    @media (max-width: 767px) {
+        .event-form-page {
+            padding: 25px 0 45px;
+        }
+
+        .event-form-card {
+            padding: 20px 15px;
+            border-radius: 13px;
+        }
+
+        .event-form-section {
+            padding-bottom: 25px;
+            margin-bottom: 25px;
+        }
+
+        .event-form-section-heading {
+            gap: 11px;
+        }
+
+        .form-section-icon {
+            width: 42px;
+            height: 42px;
+            font-size: 19px;
+        }
+
+        .event-form-section-heading h2 {
+            font-size: 17px;
+        }
+
+        .ticket-category-card {
+            padding: 16px 12px;
+        }
+
+        .event-form-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .event-cancel-btn,
+        .event-save-draft-btn,
+        .event-submit-btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="event-form-page">
+    <div class="container">
+
+        <!-- PAGE HEADER -->
+        <div class="event-form-header">
+
+            <a href="{% url 'events:organizer_events' %}"
+               class="event-back-link">
+                <i class="bi bi-arrow-left"></i>
+                Back to My Events
+            </a>
+
+            <span class="section-kicker">ORGANIZER WORKSPACE</span>
+
+            <h1>
+                {% if is_edit %}
+                    Edit Your Event
+                {% else %}
+                    Create a New Event
+                {% endif %}
+            </h1>
+
+            <p>
+                {% if is_edit %}
+                    Update your event information, ticket categories and pricing.
+                {% else %}
+                    Share your upcoming experience with the EventHub community.
+                    Set up your ticket categories and start selling.
+                {% endif %}
+            </p>
+
+        </div>
+
+        <!-- EVENT FORM CARD -->
+        <div class="event-form-card">
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <form method="POST"
+                  enctype="multipart/form-data"
+                  class="event-creation-form"
+                  id="eventCreationForm">
+
+                {% csrf_token %}
+
+                <!-- BASIC INFORMATION -->
+                <div class="event-form-section">
+
+                    <div class="event-form-section-heading">
+
+                        <span class="form-section-icon">
+                            <i class="bi bi-info-circle"></i>
+                        </span>
+
+                        <div>
+                            <h2>Basic Information</h2>
+                            <p>Tell people what your event is about.</p>
+                        </div>
+
+                    </div>
+
+                    <div class="row g-3">
+
+                        {% for field in form %}
+                            {% if field.name == 'title' or field.name == 'category' or field.name == 'short_description' or field.name == 'description' %}
+
+                                <div class="{% if field.name == 'description' or field.name == 'short_description' %}col-12{% else %}col-md-6{% endif %}">
+
+                                    <label for="{{ field.id_for_label }}"
+                                           class="form-label">
+
+                                        {{ field.label }}
+
+                                        {% if field.field.required %}
+                                            <span class="text-danger">*</span>
+                                        {% endif %}
+
+                                    </label>
+
+                                    {{ field }}
+
+                                    {% if field.help_text %}
+                                        <small class="form-text">
+                                            {{ field.help_text }}
+                                        </small>
+                                    {% endif %}
+
+                                    {% for error in field.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {{ error }}
+                                        </div>
+                                    {% endfor %}
+
+                                </div>
+
+                            {% endif %}
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+                <!-- EVENT POSTER -->
+                <div class="event-form-section">
+
+                    <div class="event-form-section-heading">
+
+                        <span class="form-section-icon">
+                            <i class="bi bi-image"></i>
+                        </span>
+
+                        <div>
+                            <h2>Event Poster</h2>
+                            <p>Upload an attractive image to promote your event.</p>
+                        </div>
+
+                    </div>
+
+                    {% for field in form %}
+                        {% if field.name == 'cover_image' %}
+
+                            <div class="mb-3">
+
+                                <label for="{{ field.id_for_label }}"
+                                       class="form-label">
+                                    {{ field.label }}
+                                </label>
+
+                                {% if is_edit and event.cover_image %}
+                                    <div class="current-event-poster">
+
+                                        <img src="{{ event.cover_image.url }}"
+                                             alt="Current event poster">
+
+                                        <span>Current event poster</span>
+
+                                    </div>
+                                {% endif %}
+
+                                {{ field }}
+
+                                {% if field.help_text %}
+                                    <small class="form-text">
+                                        {{ field.help_text }}
+                                    </small>
+                                {% endif %}
+
+                                {% for error in field.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+
+                            </div>
+
+                        {% endif %}
+                    {% endfor %}
+
+                </div>
+
+                <!-- EVENT TYPE AND ENTRY -->
+                <div class="event-form-section">
+
+                    <div class="event-form-section-heading">
+
+                        <span class="form-section-icon">
+                            <i class="bi bi-ticket-perforated"></i>
+                        </span>
+
+                        <div>
+                            <h2>Event Type and Entry</h2>
+                            <p>Choose how attendees will participate.</p>
+                        </div>
+
+                    </div>
+
+                    <div class="row g-3">
+
+                        {% for field in form %}
+                            {% if field.name == 'event_type' or field.name == 'entry_type' or field.name == 'capacity' %}
+
+                                <div class="col-md-4">
+
+                                    <label for="{{ field.id_for_label }}"
+                                           class="form-label">
+
+                                        {{ field.label }}
+
+                                        {% if field.field.required %}
+                                            <span class="text-danger">*</span>
+                                        {% endif %}
+
+                                    </label>
+
+                                    {{ field }}
+
+                                    {% if field.help_text %}
+                                        <small class="form-text">
+                                            {{ field.help_text }}
+                                        </small>
+                                    {% endif %}
+
+                                    {% for error in field.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {{ error }}
+                                        </div>
+                                    {% endfor %}
+
+                                </div>
+
+                            {% endif %}
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+                <!-- TICKET CATEGORIES -->
+                <div class="event-form-section" id="ticketCategoriesSection">
+
+                    <div class="event-form-section-heading">
+
+                        <span class="form-section-icon">
+                            <i class="bi bi-tags"></i>
+                        </span>
+
+                        <div>
+                            <h2>Ticket Categories and Pricing</h2>
+                            <p>Create different ticket options for your attendees.</p>
+                        </div>
+
+                    </div>
+
+                    <div class="ticket-section-intro">
+
+                        <strong>
+                            <i class="bi bi-lightbulb"></i>
+                            Set up your ticket options
+                        </strong>
+
+                        <p>
+                            You can create different ticket categories such as
+                            Regular, VIP, VVIP and Early Bird. Each category
+                            can have its own price, quantity and sales period.
+                        </p>
+
+                    </div>
+
+                    {% if ticket_formset.non_form_errors %}
+                        <div class="ticket-form-errors">
+                            <strong>
+                                <i class="bi bi-exclamation-circle"></i>
+                                Ticket category errors
+                            </strong>
+
+                            <ul class="mt-2">
+                                {% for error in ticket_formset.non_form_errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    {{ ticket_formset.management_form }}
+
+                    <div id="ticketCategoriesContainer">
+
+                        {% for ticket_form in ticket_formset %}
+
+                            <div class="ticket-category-card"
+                                 data-ticket-card>
+
+                                {{ ticket_form.id }}
+
+                                {% if ticket_form.non_field_errors %}
+                                    <div class="ticket-form-errors">
+                                        {{ ticket_form.non_field_errors }}
+                                    </div>
+                                {% endif %}
+
+                                <div class="ticket-card-header">
+
+                                    <div class="ticket-card-title">
+
+                                        <i class="bi bi-ticket-perforated"></i>
+
+                                        <span class="ticket-card-number">
+                                            Ticket Category {{ forloop.counter }}
+                                        </span>
+
+                                    </div>
+
+                                    <button type="button"
+                                            class="ticket-remove-btn"
+                                            data-remove-ticket>
+
+                                        <i class="bi bi-trash"></i>
+                                        Remove
+
+                                    </button>
+
+                                </div>
+
+                                <div class="row g-3">
+
+                                    <!-- CATEGORY NAME -->
+                                    <div class="col-md-6">
+
+                                        <label for="{{ ticket_form.name.id_for_label }}"
+                                               class="form-label">
+
+                                            Ticket Category Name
+                                            <span class="text-danger">*</span>
+
+                                        </label>
+
+                                        {{ ticket_form.name }}
+
+                                        {% for error in ticket_form.name.errors %}
+                                            <div class="text-danger small mt-1">
+                                                {{ error }}
+                                            </div>
+                                        {% endfor %}
+
+                                    </div>
+
+                                    <!-- PRICE -->
+                                    <div class="col-md-3">
+
+                                        <label for="{{ ticket_form.price.id_for_label }}"
+                                               class="form-label">
+
+                                            Ticket Price
+                                            <span class="text-danger">*</span>
+
+                                        </label>
+
+                                        {{ ticket_form.price }}
+
+                                        {% for error in ticket_form.price.errors %}
+                                            <div class="text-danger small mt-1">
+                                                {{ error }}
+                                            </div>
+                                        {% endfor %}
+
+                                    </div>
+
+                                    <!-- CURRENCY -->
+                                    <div class="col-md-3">
+
+                                        <label for="{{ ticket_form.currency.id_for_label }}"
+                                               class="form-label">
+                                            Currency
+                                        </label>
+
+                                        {{ ticket_form.currency }}
+
+                                        {% for error in ticket_form.currency.errors %}
+                                            <div class="text-danger small mt-1">
+                                                {{ error }}
+                                            </div>
+                                        {% endfor %}
+
+                                    </div>
+
+                                    <!-- DESCRIPTION -->
+                                    <div class="col-12">
+
+                                        <label for="{{ ticket_form.description.id_for_label }}"
+                                               class="form-label">
+                                            Description
+                                        </label>
+
+                                        {{ ticket_form.description }}
+
+                                        {% for error in ticket_form.description.errors %}
+                                            <div class="text-danger small mt-1">
+                                                {{ error }}
+                                            </div>
+                                        {% endfor %}
+
+                                    </div>
+
+                                    <!-- QUANTITY -->
+                                    <div class="col-md-4">
+
+                                        <label for="{{ ticket_form.quantity_available.id_for_label }}"
+                                               class="form-label">
+
+                                            Available Quantity
+                                            <span class="text-danger">*</span>
+
+                                        </label>
+
+                                        {{ ticket_form.quantity_available }}
+
+                                        {% for error in ticket_form.quantity_available.errors %}
+                                            <div class="text-danger small mt-1">
+                                                {{ error }}
+                                            </div>
+                                        {% endfor %}
+
+                                    </div>
+
+                                    <!-- MINIMUM -->
+                                    <div class="col-md-4">
+
+                                        <label for="{{ ticket_form.minimum_per_order.id_for_label }}"
+                                               class="form-label">
+
+                                            Minimum Per Order
+                                        </label>
+
+                                        {{ ticket_form.minimum_per_order }}
+
+                                        {% for error in ticket_form.minimum_per_order.errors %}
+                                            <div class="text-danger small mt-1">
+                                                {{ error }}
+                                            </div>
+                                        {% endfor %}
+
+                                    </div>
+
+                                    <!-- MAXIMUM -->
+                                    <div class="col-md-4">
+
+                                        <label for="{{ ticket_form.maximum_per_order.id_for_label }}"
+                                               class="form-label">
+
+                                            Maximum Per Order
+                                        </label>
+
+                                        {{ ticket_form.maximum_per_order }}
+
+                                        {% for error in ticket_form.maximum_per_order.errors %}
+                                            <div class="text-danger small mt-1">
+                                                {{ error }}
+                                            </div>
+                                        {% endfor %}
+
+                                    </div>
+
+                                    <!-- SALES START -->
+                                    <div class="col-md-6">
+
+                                        <label for="{{ ticket_form.sales_start_at.id_for_label }}"
+                                               class="form-label">
+                                            Ticket Sales Start
+                                        </label>
+
+                                        {{ ticket_form.sales_start_at }}
+
+                                        {% for error in ticket_form.sales_start_at.errors %}
+                                            <div class="text-danger small mt-1">
+                                                {{ error }}
+                                            </div>
+                                        {% endfor %}
+
+                                    </div>
+
+                                    <!-- SALES END -->
+                                    <div class="col-md-6">
+
+                                        <label for="{{ ticket_form.sales_end_at.id_for_label }}"
+                                               class="form-label">
+                                            Ticket Sales End
+                                        </label>
+
+                                        {{ ticket_form.sales_end_at }}
+
+                                        {% for error in ticket_form.sales_end_at.errors %}
+                                            <div class="text-danger small mt-1">
+                                                {{ error }}
+                                            </div>
+                                        {% endfor %}
+
+                                    </div>
+
+                                    <!-- ACTIVE STATUS -->
+                                    <div class="col-12">
+
+                                        <div class="form-check">
+
+                                            {{ ticket_form.is_active }}
+
+                                            <label class="form-check-label"
+                                                   for="{{ ticket_form.is_active.id_for_label }}">
+                                                Make this ticket category available for booking
+                                            </label>
+
+                                        </div>
+
+                                        {% for error in ticket_form.is_active.errors %}
+                                            <div class="text-danger small mt-1">
+                                                {{ error }}
+                                            </div>
+                                        {% endfor %}
+
+                                    </div>
+
+                                    <!-- DELETE FIELD -->
+                                    <div class="ticket-delete-field ticket-hidden">
+                                        {{ ticket_form.DELETE }}
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                    <!-- EMPTY FORM TEMPLATE -->
+                    <template id="emptyTicketFormTemplate">
+
+                        <div class="ticket-category-card"
+                             data-ticket-card>
+
+                            {{ ticket_formset.empty_form.id }}
+
+                            <div class="ticket-card-header">
+
+                                <div class="ticket-card-title">
+
+                                    <i class="bi bi-ticket-perforated"></i>
+
+                                    <span class="ticket-card-number">
+                                        New Ticket Category
+                                    </span>
+
+                                </div>
+
+                                <button type="button"
+                                        class="ticket-remove-btn"
+                                        data-remove-ticket>
+
+                                    <i class="bi bi-trash"></i>
+                                    Remove
+
+                                </button>
+
+                            </div>
+
+                            <div class="row g-3">
+
+                                <div class="col-md-6">
+
+                                    <label class="form-label"
+                                           for="{{ ticket_formset.empty_form.name.id_for_label }}">
+                                        Ticket Category Name
+                                        <span class="text-danger">*</span>
+                                    </label>
+
+                                    {{ ticket_formset.empty_form.name }}
+
+                                </div>
+
+                                <div class="col-md-3">
+
+                                    <label class="form-label"
+                                           for="{{ ticket_formset.empty_form.price.id_for_label }}">
+                                        Ticket Price
+                                        <span class="text-danger">*</span>
+                                    </label>
+
+                                    {{ ticket_formset.empty_form.price }}
+
+                                </div>
+
+                                <div class="col-md-3">
+
+                                    <label class="form-label"
+                                           for="{{ ticket_formset.empty_form.currency.id_for_label }}">
+                                        Currency
+                                    </label>
+
+                                    {{ ticket_formset.empty_form.currency }}
+
+                                </div>
+
+                                <div class="col-12">
+
+                                    <label class="form-label"
+                                           for="{{ ticket_formset.empty_form.description.id_for_label }}">
+                                        Description
+                                    </label>
+
+                                    {{ ticket_formset.empty_form.description }}
+
+                                </div>
+
+                                <div class="col-md-4">
+
+                                    <label class="form-label"
+                                           for="{{ ticket_formset.empty_form.quantity_available.id_for_label }}">
+                                        Available Quantity
+                                    </label>
+
+                                    {{ ticket_formset.empty_form.quantity_available }}
+
+                                </div>
+
+                                <div class="col-md-4">
+
+                                    <label class="form-label"
+                                           for="{{ ticket_formset.empty_form.minimum_per_order.id_for_label }}">
+                                        Minimum Per Order
+                                    </label>
+
+                                    {{ ticket_formset.empty_form.minimum_per_order }}
+
+                                </div>
+
+                                <div class="col-md-4">
+
+                                    <label class="form-label"
+                                           for="{{ ticket_formset.empty_form.maximum_per_order.id_for_label }}">
+                                        Maximum Per Order
+                                    </label>
+
+                                    {{ ticket_formset.empty_form.maximum_per_order }}
+
+                                </div>
+
+                                <div class="col-md-6">
+
+                                    <label class="form-label"
+                                           for="{{ ticket_formset.empty_form.sales_start_at.id_for_label }}">
+                                        Ticket Sales Start
+                                    </label>
+
+                                    {{ ticket_formset.empty_form.sales_start_at }}
+
+                                </div>
+
+                                <div class="col-md-6">
+
+                                    <label class="form-label"
+                                           for="{{ ticket_formset.empty_form.sales_end_at.id_for_label }}">
+                                        Ticket Sales End
+                                    </label>
+
+                                    {{ ticket_formset.empty_form.sales_end_at }}
+
+                                </div>
+
+                                <div class="col-12">
+
+                                    <div class="form-check">
+
+                                        {{ ticket_formset.empty_form.is_active }}
+
+                                        <label class="form-check-label"
+                                               for="{{ ticket_formset.empty_form.is_active.id_for_label }}">
+                                            Make this ticket category available for booking
+                                        </label>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="ticket-delete-field ticket-hidden">
+                                    {{ ticket_formset.empty_form.DELETE }}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </template>
+
+                    <button type="button"
+                            class="ticket-add-btn"
+                            id="addTicketCategory">
+
+                        <i class="bi bi-plus-circle"></i>
+                        Add Another Ticket Category
+
+                    </button>
+
+                    <div class="ticket-free-notice"
+                         id="freeTicketNotice">
+
+                        <i class="bi bi-info-circle"></i>
+
+                        This is a free event. Ticket categories will have
+                        a price of zero.
+
+                    </div>
+
+                </div>
+
+                <!-- DATE AND TIME -->
+                <div class="event-form-section">
+
+                    <div class="event-form-section-heading">
+
+                        <span class="form-section-icon">
+                            <i class="bi bi-calendar2-week"></i>
+                        </span>
+
+                        <div>
+                            <h2>Schedule</h2>
+                            <p>Set the event start, end and registration deadline.</p>
+                        </div>
+
+                    </div>
+
+                    <div class="row g-3">
+
+                        {% for field in form %}
+                            {% if field.name == 'start_datetime' or field.name == 'end_datetime' or field.name == 'registration_deadline' or field.name == 'timezone' %}
+
+                                <div class="col-md-6">
+
+                                    <label for="{{ field.id_for_label }}"
+                                           class="form-label">
+
+                                        {{ field.label }}
+
+                                        {% if field.field.required %}
+                                            <span class="text-danger">*</span>
+                                        {% endif %}
+
+                                    </label>
+
+                                    {{ field }}
+
+                                    {% if field.help_text %}
+                                        <small class="form-text">
+                                            {{ field.help_text }}
+                                        </small>
+                                    {% endif %}
+
+                                    {% for error in field.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {{ error }}
+                                        </div>
+                                    {% endfor %}
+
+                                </div>
+
+                            {% endif %}
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+                <!-- LOCATION DETAILS -->
+                <div class="event-form-section">
+
+                    <div class="event-form-section-heading">
+
+                        <span class="form-section-icon">
+                            <i class="bi bi-geo-alt"></i>
+                        </span>
+
+                        <div>
+                            <h2>Location Details</h2>
+                            <p>Where will your event take place?</p>
+                        </div>
+
+                    </div>
+
+                    <div class="row g-3">
+
+                        {% for field in form %}
+                            {% if field.name == 'venue_name' or field.name == 'venue_address' or field.name == 'town' or field.name == 'county' or field.name == 'google_maps_url' or field.name == 'online_event_url' %}
+
+                                <div class="col-md-6">
+
+                                    <label for="{{ field.id_for_label }}"
+                                           class="form-label">
+
+                                        {{ field.label }}
+
+                                        {% if field.field.required %}
+                                            <span class="text-danger">*</span>
+                                        {% endif %}
+
+                                    </label>
+
+                                    {{ field }}
+
+                                    {% if field.help_text %}
+                                        <small class="form-text">
+                                            {{ field.help_text }}
+                                        </small>
+                                    {% endif %}
+
+                                    {% for error in field.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {{ error }}
+                                        </div>
+                                    {% endfor %}
+
+                                </div>
+
+                            {% endif %}
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+                <!-- FORM ACTIONS -->
+                <div class="event-form-actions">
+
+                    <a href="{% url 'events:organizer_events' %}"
+                       class="event-cancel-btn">
+
+                        <i class="bi bi-x-circle"></i>
+                        Cancel
+
+                    </a>
+
+                    <button type="submit"
+                            name="action"
+                            value="draft"
+                            class="event-save-draft-btn">
+
+                        <i class="bi bi-save"></i>
+                        Save as Draft
+
+                    </button>
+
+                    <button type="submit"
+                            name="action"
+                            value="submit"
+                            class="event-submit-btn">
+
+                        <i class="bi bi-send"></i>
+                        Submit for Approval
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const addTicketButton = document.getElementById('addTicketCategory');
+    const ticketContainer = document.getElementById('ticketCategoriesContainer');
+    const emptyTemplate = document.getElementById('emptyTicketFormTemplate');
+
+    const totalFormsInput = document.getElementById('id_tickets-TOTAL_FORMS');
+    const entryTypeSelect = document.getElementById('id_entry_type');
+
+    const freeTicketNotice = document.getElementById('freeTicketNotice');
+
+    if (!addTicketButton || !ticketContainer || !emptyTemplate || !totalFormsInput) {
+        return;
+    }
+
+    /*
+     * Update visible ticket category numbers.
+     */
+    function updateTicketNumbers() {
+
+        const cards = ticketContainer.querySelectorAll(
+            '[data-ticket-card]:not(.ticket-hidden)'
+        );
+
+        let number = 1;
+
+        cards.forEach(function (card) {
+
+            const title = card.querySelector('.ticket-card-number');
+
+            if (title) {
+                title.textContent = 'Ticket Category ' + number;
+            }
+
+            number++;
+        });
+    }
+
+    /*
+     * Check whether the event is free.
+     */
+    function isFreeEvent() {
+
+        return entryTypeSelect && entryTypeSelect.value === 'free';
+    }
+
+    /*
+     * Apply free-event pricing.
+     *
+     * The price field is made readonly rather than disabled,
+     * ensuring that its value is still submitted to Django.
+     */
+    function updateTicketPrices() {
+
+        const freeEvent = isFreeEvent();
+
+        if (freeTicketNotice) {
+            freeTicketNotice.style.display = freeEvent ? 'block' : 'none';
+        }
+
+        const priceInputs = ticketContainer.querySelectorAll(
+            'input[name$="-price"]'
+        );
+
+        priceInputs.forEach(function (input) {
+
+            if (freeEvent) {
+                input.value = '0.00';
+                input.readOnly = true;
+            } else {
+                input.readOnly = false;
+            }
+        });
+    }
+
+    /*
+     * Add a new ticket category.
+     */
+    addTicketButton.addEventListener('click', function () {
+
+        const formIndex = parseInt(totalFormsInput.value, 10);
+
+        const templateHTML = emptyTemplate.innerHTML.replace(
+            /__prefix__/g,
+            formIndex
+        );
+
+        ticketContainer.insertAdjacentHTML(
+            'beforeend',
+            templateHTML
+        );
+
+        totalFormsInput.value = formIndex + 1;
+
+        updateTicketNumbers();
+        updateTicketPrices();
+
+        const newCard = ticketContainer.lastElementChild;
+
+        if (newCard) {
+
+            const nameInput = newCard.querySelector(
+                'input[name$="-name"]'
+            );
+
+            if (nameInput) {
+                nameInput.focus();
+            }
+
+        }
+
+    });
+
+    /*
+     * Remove a ticket category safely.
+     *
+     * Existing database records are marked for deletion using
+     * the Django DELETE checkbox. New empty forms are hidden.
+     */
+    ticketContainer.addEventListener('click', function (event) {
+
+        const removeButton = event.target.closest(
+            '[data-remove-ticket]'
+        );
+
+        if (!removeButton) {
+            return;
+        }
+
+        const card = removeButton.closest('[data-ticket-card]');
+
+        if (!card) {
+            return;
+        }
+
+        const deleteCheckbox = card.querySelector(
+            'input[name$="-DELETE"]'
+        );
+
+        const idInput = card.querySelector(
+            'input[name$="-id"]'
+        );
+
+        const hasExistingRecord = idInput && idInput.value;
+
+        if (hasExistingRecord && deleteCheckbox) {
+
+            deleteCheckbox.checked = true;
+
+            card.classList.add('ticket-hidden');
+
+        } else {
+
+            card.remove();
+
+            /*
+             * Django formsets use sequential indexes.
+             * Do not reduce TOTAL_FORMS after removing a new form.
+             * The remaining form indexes must remain unchanged.
+             */
+
+        }
+
+        updateTicketNumbers();
+
+    });
+
+    /*
+     * React when the event entry type changes.
+     */
+    if (entryTypeSelect) {
+
+        entryTypeSelect.addEventListener('change', function () {
+            updateTicketPrices();
+        });
+
+    }
+
+    /*
+     * Initial setup.
+     */
+    updateTicketNumbers();
+    updateTicketPrices();
+
+});
+</script>
+
+{% endblock %}

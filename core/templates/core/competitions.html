@@ -1,0 +1,149 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Explore Events | EventHub{% endblock %}
+
+{% block content %}
+
+<div class="competitions-page">
+
+    <!-- PAGE HERO -->
+    <section class="competitions-hero">
+        <div class="container">
+
+            <span class="section-eyebrow">
+                DISCOVER YOUR NEXT EXPERIENCE
+            </span>
+
+            <h1>Explore Amazing Events</h1>
+
+            <p>
+                Discover concerts, sports competitions, conferences,
+                festivals and social events. Find your next experience
+                and book your tickets online.
+            </p>
+
+        </div>
+    </section>
+
+    <!-- SEARCH -->
+    <div class="container event-search-wrapper">
+
+        <form method="GET" action="{% url 'core:competitions' %}"
+              class="event-search-box">
+
+            <div class="search-input-group">
+                <i class="bi bi-search"></i>
+
+                <input
+                    type="text"
+                    name="q"
+                    value="{{ request.GET.q|default:'' }}"
+                    placeholder="Search events, competitions or experiences..."
+                >
+            </div>
+
+            <button type="submit" class="event-search-btn">
+                Search Events
+                <i class="bi bi-arrow-right"></i>
+            </button>
+
+        </form>
+
+    </div>
+
+    <!-- EVENTS CONTENT -->
+    <section class="competitions-content">
+
+        <div class="container">
+
+            <div class="events-page-heading">
+
+                <div>
+                    <h2>Find Your Next Event</h2>
+                    <p>Explore experiences worth attending.</p>
+                </div>
+
+            </div>
+
+            <!-- CATEGORY FILTERS -->
+            <div class="event-category-filters">
+
+                <a href="{% url 'core:competitions' %}"
+                   class="event-filter-btn active">
+                    All Events
+                </a>
+
+                <a href="#" class="event-filter-btn">
+                    Music & Concerts
+                </a>
+
+                <a href="#" class="event-filter-btn">
+                    Sports
+                </a>
+
+                <a href="#" class="event-filter-btn">
+                    Competitions
+                </a>
+
+                <a href="#" class="event-filter-btn">
+                    Conferences
+                </a>
+
+                <a href="#" class="event-filter-btn">
+                    Social Events
+                </a>
+
+            </div>
+
+            <!-- EMPTY STATE -->
+            <div class="competitions-empty-state">
+
+                <div class="competitions-empty-icon">
+                    <i class="bi bi-calendar2-event"></i>
+                </div>
+
+                <h3>Exciting Events Coming Soon!</h3>
+
+                <p>
+                    We are preparing an amazing collection of events
+                    for you. Soon you will be able to discover events,
+                    compare ticket options and book your tickets
+                    conveniently online.
+                </p>
+
+                <a href="{% url 'accounts:organizer_register' %}"
+                   class="btn">
+                    <i class="bi bi-plus-circle"></i>
+                    Publish Your Event
+                </a>
+
+            </div>
+
+            <!-- ORGANIZER BANNER -->
+            <div class="competitions-organizer-banner">
+
+                <div>
+                    <h3>Are You an Event Organizer?</h3>
+
+                    <p>
+                        Publish your event, sell tickets and manage
+                        attendees using our platform.
+                    </p>
+                </div>
+
+                <a href="{% url 'accounts:organizer_register' %}"
+                   class="btn">
+                    Become an Organizer
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

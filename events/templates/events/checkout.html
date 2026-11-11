@@ -1,0 +1,799 @@
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Checkout | {{ event.title }}{% endblock %}
+
+{% block content %}
+
+<style>
+    .checkout-page {
+        background: #f5f7fb;
+        min-height: 100vh;
+        padding: 40px 0;
+    }
+
+    .checkout-header {
+        background: linear-gradient(120deg, #102a43, #198754);
+        color: white;
+        padding: 30px;
+        border-radius: 16px;
+        margin-bottom: 28px;
+    }
+
+    .checkout-card {
+        background: #fff;
+        border: 1px solid #e5eaf0;
+        border-radius: 16px;
+        padding: 25px;
+        box-shadow: 0 5px 20px rgba(0,0,0,.04);
+        margin-bottom: 20px;
+    }
+
+    .step-heading {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        margin-bottom: 20px;
+    }
+
+    .step-number {
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        border-radius: 50%;
+        background: #198754;
+        color: white;
+        font-weight: 800;
+    }
+
+    .step-heading h5 {
+        font-weight: 750;
+        margin-bottom: 3px;
+    }
+
+    .form-label {
+        font-weight: 650;
+        color: #344054;
+        margin-bottom: 7px;
+    }
+
+    .form-control,
+    .form-select {
+        min-height: 48px;
+        border-radius: 9px;
+        border-color: #dce3eb;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #198754;
+        box-shadow: 0 0 0 .2rem rgba(25,135,84,.12);
+    }
+
+    .email-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        margin-top: 8px;
+    }
+
+    .email-status.valid {
+        color: #198754;
+    }
+
+    .email-status.invalid {
+        color: #dc3545;
+    }
+
+    .choice-card {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 17px;
+        border: 1px solid #dce3eb;
+        border-radius: 12px;
+        cursor: pointer;
+        height: 100%;
+        transition: .2s ease;
+    }
+
+    .choice-card:hover {
+        border-color: #198754;
+        background: #f7fcf8;
+    }
+
+    .choice-card:has(input:checked) {
+        border: 2px solid #198754;
+        background: #f0faf3;
+    }
+
+    .choice-card input {
+        margin-top: 5px;
+        accent-color: #198754;
+    }
+
+    .choice-icon {
+        font-size: 25px;
+        color: #198754;
+    }
+
+    .choice-title {
+        font-weight: 750;
+        margin-bottom: 4px;
+    }
+
+    .choice-description {
+        font-size: 12px;
+        color: #667085;
+    }
+
+    .payment-details {
+        display: none;
+        background: #f8fafc;
+        border: 1px solid #e5eaf0;
+        padding: 18px;
+        border-radius: 12px;
+        margin-top: 16px;
+    }
+
+    .payment-details.active {
+        display: block;
+    }
+
+    .phone-input-group {
+        display: flex;
+        align-items: stretch;
+    }
+
+    .phone-prefix {
+        display: flex;
+        align-items: center;
+        padding: 0 14px;
+        background: #eef2f6;
+        border: 1px solid #dce3eb;
+        border-right: 0;
+        border-radius: 9px 0 0 9px;
+        font-weight: 700;
+    }
+
+    .phone-input-group .form-control {
+        border-radius: 0 9px 9px 0;
+    }
+
+    .terms-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        font-size: 14px;
+    }
+
+    .terms-row input {
+        margin-top: 5px;
+        accent-color: #198754;
+    }
+
+    .complete-btn {
+        width: 100%;
+        background: #198754;
+        border: none;
+        color: white;
+        border-radius: 10px;
+        padding: 15px;
+        font-weight: 800;
+        font-size: 16px;
+        transition: .2s;
+    }
+
+    .complete-btn:hover {
+        background: #146c43;
+        transform: translateY(-1px);
+    }
+
+    .booking-summary {
+        position: sticky;
+        top: 20px;
+    }
+
+    .checkout-ticket {
+        padding: 16px 0;
+        border-bottom: 1px solid #edf0f4;
+    }
+
+    .summary-total {
+        color: #198754;
+        font-size: 1.75rem;
+        font-weight: 850;
+    }
+
+    .recipient-fields {
+        display: none;
+        background: #f8fafc;
+        border: 1px solid #e5eaf0;
+        border-radius: 12px;
+        padding: 18px;
+        margin-top: 18px;
+    }
+
+    .recipient-fields.active {
+        display: block;
+    }
+
+    .secure-note {
+        background: #eaf5ee;
+        color: #146c43;
+        border-radius: 10px;
+        padding: 14px;
+        font-size: 13px;
+    }
+
+    @media(max-width: 991px) {
+        .booking-summary {
+            position: static;
+        }
+    }
+
+    @media(max-width: 576px) {
+        .checkout-page {
+            padding: 22px 0;
+        }
+
+        .checkout-header,
+        .checkout-card {
+            padding: 20px;
+        }
+    }
+</style>
+
+<div class="checkout-page">
+    <div class="container">
+
+        <div class="checkout-header">
+            <span class="badge bg-light text-success mb-3">
+                <i class="bi bi-shield-lock me-1"></i>
+                SECURE CHECKOUT
+            </span>
+
+            <h2 class="fw-bold mb-2">Complete Your Booking</h2>
+
+            <p class="mb-0 text-white-50">
+                Enter your details, choose your payment method
+                and complete your ticket purchase.
+            </p>
+        </div>
+
+        <form method="POST"
+              action="{% url 'events:checkout' event.slug %}"
+              id="checkoutForm">
+
+            {% csrf_token %}
+
+            <div class="row g-4">
+
+                <!-- LEFT: CHECKOUT FORM -->
+                <div class="col-lg-7">
+
+                    <!-- STEP 1: EMAIL -->
+                    <div class="checkout-card">
+
+                        <div class="step-heading">
+                            <span class="step-number">1</span>
+                            <div>
+                                <h5>Email Address</h5>
+                                <small class="text-muted">
+                                    We'll use this to find your details
+                                    and send your tickets.
+                                </small>
+                            </div>
+                        </div>
+
+                        <label class="form-label" for="email">
+                            Email Address *
+                        </label>
+
+                        <input type="email"
+                               class="form-control"
+                               id="email"
+                               name="email"
+                               value="{{ form_data.email|default:'' }}"
+                               placeholder="example@email.com"
+                               autocomplete="email"
+                               required>
+
+                        <div id="emailStatus"
+                             class="email-status text-muted">
+                            <i class="bi bi-envelope"></i>
+                            Enter your email address.
+                        </div>
+
+                    </div>
+
+                    <!-- STEP 2: CUSTOMER DETAILS -->
+                    <div class="checkout-card">
+
+                        <div class="step-heading">
+                            <span class="step-number">2</span>
+                            <div>
+                                <h5>Your Details</h5>
+                                <small class="text-muted">
+                                    Enter the contact details for this booking.
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label" for="full_name">
+                                Full Name *
+                            </label>
+
+                            <input type="text"
+                                   class="form-control"
+                                   id="full_name"
+                                   name="full_name"
+                                   value="{{ form_data.full_name|default:'' }}"
+                                   placeholder="Enter your full name"
+                                   autocomplete="name"
+                                   required>
+                        </div>
+
+                        <div>
+                            <label class="form-label" for="phone">
+                                Phone Number *
+                            </label>
+
+                            <input type="tel"
+                                   class="form-control"
+                                   id="phone"
+                                   name="phone"
+                                   value="{{ form_data.phone|default:'' }}"
+                                   placeholder="0712345678"
+                                   autocomplete="tel"
+                                   required>
+
+                            <small class="text-muted">
+                                Enter your contact phone number.
+                            </small>
+                        </div>
+
+                    </div>
+
+                    <!-- STEP 3: TICKET RECIPIENT -->
+                    <div class="checkout-card">
+
+                        <div class="step-heading">
+                            <span class="step-number">3</span>
+                            <div>
+                                <h5>Who Is This Ticket For?</h5>
+                                <small class="text-muted">
+                                    Choose whether the ticket is for you
+                                    or someone else.
+                                </small>
+                            </div>
+                        </div>
+
+                        <label class="form-label d-block mb-3">
+                            Who are you buying for? *
+                        </label>
+
+                        <div class="row g-3">
+
+                            <div class="col-md-6">
+                                <label class="choice-card">
+                                    <input type="radio"
+                                           name="purchase_for"
+                                           value="myself"
+                                           {% if form_data.purchase_for != 'someone_else' %}checked{% endif %}>
+
+                                    <div>
+                                        <div class="choice-title">
+                                            <i class="bi bi-person-check text-success me-1"></i>
+                                            Myself
+                                        </div>
+
+                                        <div class="choice-description">
+                                            I will receive and use these tickets.
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="choice-card">
+                                    <input type="radio"
+                                           name="purchase_for"
+                                           value="someone_else"
+                                           {% if form_data.purchase_for == 'someone_else' %}checked{% endif %}>
+
+                                    <div>
+                                        <div class="choice-title">
+                                            <i class="bi bi-people text-success me-1"></i>
+                                            Someone Else
+                                        </div>
+
+                                        <div class="choice-description">
+                                            Send the ticket to another recipient.
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+
+                        </div>
+
+                        <div class="recipient-fields"
+                             id="recipientFields">
+
+                            <h6 class="fw-bold mb-3">
+                                <i class="bi bi-person-plus me-2 text-success"></i>
+                                Recipient Details
+                            </h6>
+
+                            <div class="mb-3">
+                                <label class="form-label"
+                                       for="recipient_name">
+                                    Recipient Full Name *
+                                </label>
+
+                                <input type="text"
+                                       class="form-control"
+                                       id="recipient_name"
+                                       name="recipient_name"
+                                       value="{{ form_data.recipient_name|default:'' }}"
+                                       placeholder="Recipient's full name">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label"
+                                       for="recipient_email">
+                                    Recipient Email *
+                                </label>
+
+                                <input type="email"
+                                       class="form-control"
+                                       id="recipient_email"
+                                       name="recipient_email"
+                                       value="{{ form_data.recipient_email|default:'' }}"
+                                       placeholder="recipient@email.com">
+                            </div>
+
+                            <div>
+                                <label class="form-label"
+                                       for="recipient_phone">
+                                    Recipient Phone Number *
+                                </label>
+
+                                <input type="tel"
+                                       class="form-control"
+                                       id="recipient_phone"
+                                       name="recipient_phone"
+                                       value="{{ form_data.recipient_phone|default:'' }}"
+                                       placeholder="0712345678">
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- STEP 4: PAYMENT -->
+                    <div class="checkout-card">
+
+                        <div class="step-heading">
+                            <span class="step-number">4</span>
+                            <div>
+                                <h5>Choose Payment</h5>
+                                <small class="text-muted">
+                                    Select your preferred payment option below.
+                                </small>
+                            </div>
+                        </div>
+
+                        <label class="form-label d-block mb-3">
+                            Payment Method *
+                        </label>
+
+                        <div class="row g-3">
+
+                            <div class="col-md-6">
+                                <label class="choice-card">
+                                    <input type="radio"
+                                           name="payment_method"
+                                           value="mpesa"
+                                           {% if form_data.payment_method != 'pesapal' %}checked{% endif %}>
+
+                                    <div>
+                                        <div class="choice-title">
+                                            <i class="bi bi-phone text-success me-1"></i>
+                                            M-PESA
+                                        </div>
+
+                                        <div class="choice-description">
+                                            Instant mobile payment.
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="choice-card">
+                                    <input type="radio"
+                                           name="payment_method"
+                                           value="pesapal"
+                                           {% if form_data.payment_method == 'pesapal' %}checked{% endif %}>
+
+                                    <div>
+                                        <div class="choice-title">
+                                            <i class="bi bi-credit-card text-success me-1"></i>
+                                            PesaPal
+                                        </div>
+
+                                        <div class="choice-description">
+                                            Secure alternative checkout.
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+
+                        </div>
+
+                        <!-- MPESA PHONE -->
+                        <div class="payment-details"
+                             id="mpesaDetails">
+
+                            <label class="form-label" for="mpesa_phone">
+                                M-PESA Number *
+                            </label>
+
+                            <div class="phone-input-group">
+                                <span class="phone-prefix">+254</span>
+
+                                <input type="tel"
+                                       class="form-control"
+                                       id="mpesa_phone"
+                                       name="mpesa_phone"
+                                       value="{{ form_data.mpesa_phone|default:'' }}"
+                                       placeholder="712345678">
+                            </div>
+
+                            <small class="text-muted d-block mt-2">
+                                Enter your M-PESA number without the country code.
+                                You will receive a payment prompt on your phone.
+                            </small>
+
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="terms-row mb-4">
+                            <input type="checkbox"
+                                   id="terms"
+                                   name="terms"
+                                   required
+                                   {% if form_data.terms == 'on' %}checked{% endif %}>
+
+                            <label for="terms">
+                                I agree to the
+                                <a href="#"
+                                   target="_blank"
+                                   class="fw-bold text-success">
+                                    Terms & Conditions
+                                </a>
+                                and understand that my booking will only
+                                be confirmed after successful payment.
+                            </label>
+                        </div>
+
+                        <div class="secure-note mb-4">
+                            <i class="bi bi-shield-check me-2"></i>
+                            Your payment will be processed securely.
+                            Never share your M-PESA PIN with anyone.
+                        </div>
+
+                        <button type="submit"
+                                class="complete-btn"
+                                id="completePurchaseBtn">
+
+                            <i class="bi bi-lock-fill me-2"></i>
+                            Complete Purchase
+
+                        </button>
+
+                        <p class="text-muted text-center small mt-3 mb-0">
+                            By continuing, you confirm that your booking
+                            details are correct.
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <!-- RIGHT: BOOKING SUMMARY -->
+                <div class="col-lg-5">
+
+                    <div class="checkout-card booking-summary">
+
+                        <h5 class="fw-bold mb-1">Your Booking</h5>
+
+                        <p class="text-muted small mb-3">
+                            {{ event.title }}
+                        </p>
+
+                        {% for item in checkout_tickets %}
+
+                        <div class="checkout-ticket">
+
+                            <div class="d-flex justify-content-between gap-3">
+
+                                <div>
+                                    <strong>
+                                        {{ item.ticket.name }}
+                                    </strong>
+
+                                    <div class="text-muted small">
+                                        Qty: {{ item.quantity }}
+                                    </div>
+                                </div>
+
+                                <strong class="text-nowrap">
+                                    {{ currency }}
+                                    {{ item.subtotal|floatformat:2 }}
+                                </strong>
+
+                            </div>
+
+                            <small class="text-muted">
+                                {{ currency }}
+                                {{ item.ticket.price|floatformat:2 }}
+                                per ticket
+                            </small>
+
+                        </div>
+
+                        {% endfor %}
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <span class="text-muted">Total Tickets</span>
+                            <strong>{{ total_quantity }}</strong>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-3">
+                            <span class="text-muted">Subtotal</span>
+                            <strong>
+                                {{ currency }}
+                                {{ total_amount|floatformat:2 }}
+                            </strong>
+                        </div>
+
+                        <hr>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <strong>Final Total</strong>
+
+                            <div class="summary-total">
+                                {{ currency }}
+                                {{ total_amount|floatformat:2 }}
+                            </div>
+                        </div>
+
+                        <div class="alert alert-light border mt-4 mb-0 small">
+                            <i class="bi bi-info-circle text-success me-2"></i>
+                            Please confirm your email and phone number
+                            carefully before completing payment.
+                        </div>
+
+                    </div>
+
+                    <a href="{% url 'events:event_booking' event.slug %}"
+                       class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-arrow-left me-2"></i>
+                        Change Ticket Selection
+                    </a>
+
+                </div>
+
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const recipientFields = document.getElementById('recipientFields');
+    const mpesaDetails = document.getElementById('mpesaDetails');
+
+    const recipientInputs = [
+        document.getElementById('recipient_name'),
+        document.getElementById('recipient_email'),
+        document.getElementById('recipient_phone')
+    ];
+
+    const mpesaPhone = document.getElementById('mpesa_phone');
+
+    const emailInput = document.getElementById('email');
+    const emailStatus = document.getElementById('emailStatus');
+
+    const checkoutForm = document.getElementById('checkoutForm');
+    const completeButton = document.getElementById('completePurchaseBtn');
+
+    function updateRecipientFields() {
+        const selected = document.querySelector(
+            'input[name="purchase_for"]:checked'
+        );
+
+        const someoneElse = selected &&
+            selected.value === 'someone_else';
+
+        recipientFields.classList.toggle('active', someoneElse);
+
+        recipientInputs.forEach(function (input) {
+            input.required = someoneElse;
+        });
+    }
+
+    function updatePaymentFields() {
+        const selected = document.querySelector(
+            'input[name="payment_method"]:checked'
+        );
+
+        const useMpesa = selected && selected.value === 'mpesa';
+
+        mpesaDetails.classList.toggle('active', useMpesa);
+        mpesaPhone.required = useMpesa;
+    }
+
+    function updateEmailStatus() {
+        const email = emailInput.value.trim();
+
+        if (!email) {
+            emailStatus.className = 'email-status text-muted';
+            emailStatus.innerHTML =
+                '<i class="bi bi-envelope"></i> Enter your email address.';
+            return;
+        }
+
+        const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+        if (valid) {
+            emailStatus.className = 'email-status valid';
+            emailStatus.innerHTML =
+                '<i class="bi bi-check-circle-fill"></i> Email accepted.';
+        } else {
+            emailStatus.className = 'email-status invalid';
+            emailStatus.innerHTML =
+                '<i class="bi bi-exclamation-circle"></i> Enter a valid email address.';
+        }
+    }
+
+    document.querySelectorAll(
+        'input[name="purchase_for"]'
+    ).forEach(function (input) {
+        input.addEventListener('change', updateRecipientFields);
+    });
+
+    document.querySelectorAll(
+        'input[name="payment_method"]'
+    ).forEach(function (input) {
+        input.addEventListener('change', updatePaymentFields);
+    });
+
+    emailInput.addEventListener('input', updateEmailStatus);
+
+    checkoutForm.addEventListener('submit', function () {
+        completeButton.disabled = true;
+        completeButton.innerHTML =
+            '<span class="spinner-border spinner-border-sm me-2"></span> Processing...';
+    });
+
+    updateRecipientFields();
+    updatePaymentFields();
+    updateEmailStatus();
+
+});
+</script>
+
+{% endblock %}

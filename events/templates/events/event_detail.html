@@ -1,0 +1,198 @@
+
+{% extends 'base.html' %}
+
+{% block title %}{{ event.title }} | EventHub{% endblock %}
+
+{% block content %}
+
+<div class="event-detail-page">
+
+    <div class="event-detail-top">
+        <div class="container">
+            <a href="{% url 'events:public_events' %}" class="event-back-link"></a>
+                <i class="bi bi-arrow-left"></i> Back to Events
+            </a>
+        </div>
+    </div>
+
+    <div class="container event-detail-container">
+        <div class="row g-4">
+
+            <!-- MAIN EVENT CONTENT -->
+            <div class="col-lg-8">
+
+                <div class="event-detail-cover">
+                    {% if event.cover_image %}
+                        <img src="{{ event.cover_image.url }}"
+                             alt="{{ event.title }}">
+                    {% else %}
+                        <div class="event-image-placeholder">
+                            <i class="bi bi-calendar-event"></i>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="event-detail-content">
+                    <div class="event-detail-labels">
+                        {% if event.category %}
+                            <span>{{ event.category.name }}</span>
+                        {% endif %}
+                        <span>{{ event.get_event_type_display }}</span>
+                        {% if event.entry_type == 'free' %}
+                            <span class="free-label">Free Event</span>
+                        {% else %}
+                            <span>Paid Event</span>
+                        {% endif %}
+                    </div>
+
+                    <h1>{{ event.title }}</h1>
+
+                    <p class="event-detail-short-description">
+                        {{ event.short_description }}
+                    </p>
+
+
+                    <hr>
+
+                    <h2>About This Event</h2>
+                    <div class="event-long-description">
+                        {{ event.description|linebreaks }}
+                    </div>
+
+                    {% if event.gallery_images.all %}
+                    <div class="event-gallery-section">
+                        <h2>Event Gallery</h2>
+                        <div class="row g-3">
+                            {% for gallery_image in event.gallery_images.all %}
+                            <div class="col-6 col-md-4">
+                                <div class="event-gallery-image">
+                                    <img src="{{ gallery_image.image.url }}"
+                                         alt="{{ gallery_image.caption|default:event.title }}">
+                                    {% if gallery_image.caption %}
+                                        <small>{{ gallery_image.caption }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- EVENT INFORMATION -->
+            <div class="col-lg-4">
+                <aside class="event-booking-card">
+
+                    <div class="event-booking-heading">
+                        <span>EVENT INFORMATION</span>
+                        <h3>Plan Your Visit</h3>
+                    </div>
+
+                    <div class="event-information-item">
+                        <div class="event-information-icon">
+                            <i class="bi bi-calendar-event"></i>
+                        </div>
+                        <div>
+                            <small>Event Date</small>
+                            <strong>{{ event.start_datetime|date:"l, d F Y" }}</strong>
+                        </div>
+                    </div>
+
+                    <div class="event-information-item">
+                        <div class="event-information-icon">
+                            <i class="bi bi-clock"></i>
+                        </div>
+                        <div>
+                            <small>Event Time</small>
+                            <strong>
+                                {{ event.start_datetime|date:"g:i A" }}
+                                –
+                                {{ event.end_datetime|date:"g:i A" }}
+                            </strong>
+                        </div>
+                    </div>
+
+                    <div class="event-information-item">
+                        <div class="event-information-icon">
+                            <i class="bi bi-geo-alt"></i>
+                        </div>
+                        <div>
+                            <small>Location</small>
+                            <strong>
+                                {% if event.event_type == 'online' %}
+                                    Online Event
+                                {% else %}
+                                    {{ event.venue_name|default:"Venue to be announced" }}
+                                {% endif %}
+                            </strong>
+                            <span>
+                                {{ event.venue_address }}
+                                {% if event.town %}, {{ event.town }}{% endif %}
+                                {% if event.county %}, {{ event.county }}{% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    {% if event.capacity %}
+                    <div class="event-information-item">
+                        <div class="event-information-icon">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <div>
+                            <small>Event Capacity</small>
+                            <strong>{{ event.capacity }} Attendees</strong>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <hr>
+
+                    <div class="event-ticket-summary">
+                        {% if event.entry_type == 'free' %}
+                            <span>Entry</span>
+                            <strong class="free-price">FREE</strong>
+                        {% else %}
+                            <span>Entry</span>
+                            <strong>Paid Tickets</strong>
+                            <small>Ticket options and prices will be shown here.</small>
+                        {% endif %}
+                    </div>
+
+                    {% if event.event_type == 'online' and event.online_event_url %}
+                        <a href="{{ event.online_event_url }}"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="event-booking-btn">
+                            Join Online Event <i class="bi bi-box-arrow-up-right"></i>
+                        </a>
+                    {% else %}
+                        <button type="button"
+                                class="event-booking-btn"
+                                disabled>
+                            Ticket Booking Coming Soon
+                        </button>
+                    {% endif %}
+
+                    {% if event.google_maps_url %}
+                        <a href="{{ event.google_maps_url }}"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="event-map-link">
+                            <i class="bi bi-map"></i> View Location on Map
+                        </a>
+                    {% endif %}
+
+                    <div class="event-secure-note">
+                        <i class="bi bi-shield-check"></i>
+                        Secure event information on EventHub.
+                    </div>
+
+                </aside>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

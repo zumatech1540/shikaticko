@@ -1,0 +1,590 @@
+```django
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Book Tickets | {{ event.title }}{% endblock %}
+
+{% block content %}
+
+<style>
+    .booking-page {
+        background: #f5f7fb;
+        min-height: 100vh;
+        padding: 45px 0;
+    }
+
+    .booking-header {
+        background: linear-gradient(120deg, #102a43, #198754);
+        color: white;
+        padding: 35px;
+        border-radius: 18px;
+        margin-bottom: 30px;
+    }
+
+    .booking-header p {
+        color: rgba(255,255,255,.8);
+    }
+
+    .ticket-option {
+        background: #fff;
+        border: 1px solid #e5eaf0;
+        border-radius: 16px;
+        padding: 24px;
+        height: 100%;
+        transition: .2s ease;
+    }
+
+    .ticket-option:hover {
+        border-color: #198754;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0,0,0,.07);
+    }
+
+    .ticket-price {
+        color: #198754;
+        font-size: 1.8rem;
+        font-weight: 800;
+    }
+
+    .ticket-quantity {
+        max-width: 115px;
+        text-align: center;
+        font-weight: 700;
+    }
+
+    .booking-note {
+        background: #eaf5ee;
+        border-radius: 12px;
+        padding: 15px;
+        color: #146c43;
+    }
+
+    .booking-summary {
+        background: #fff;
+        border: 1px solid #e5eaf0;
+        border-radius: 16px;
+        padding: 23px;
+        margin-top: 28px;
+        box-shadow: 0 5px 20px rgba(0,0,0,.04);
+    }
+
+    .summary-total {
+        color: #198754;
+        font-size: 1.8rem;
+        font-weight: 800;
+    }
+
+    .continue-booking-btn {
+        background: #198754;
+        border: none;
+        color: #fff;
+        padding: 13px 25px;
+        border-radius: 10px;
+        font-weight: 700;
+        transition: .2s;
+    }
+
+    .continue-booking-btn:hover:not(:disabled) {
+        background: #146c43;
+        transform: translateY(-2px);
+    }
+
+    .continue-booking-btn:disabled {
+        background: #aab7b0;
+        cursor: not-allowed;
+        opacity: .7;
+    }
+
+    .ticket-stock {
+        color: #64748b;
+        font-size: 12px;
+    }
+
+    .ticket-description {
+        min-height: 45px;
+        color: #64748b;
+    }
+
+    @media(max-width: 576px) {
+        .booking-page {
+            padding: 25px 0;
+        }
+
+        .booking-header {
+            padding: 25px 20px;
+        }
+
+        .booking-summary {
+            padding: 18px;
+        }
+
+        .booking-actions {
+            flex-direction: column;
+        }
+
+        .booking-actions a,
+        .booking-actions button {
+            width: 100%;
+            text-align: center;
+        }
+    }
+</style>
+
+<div class="booking-page">
+    <div class="container">
+
+        <!-- EVENT HEADER -->
+        <div class="booking-header">
+
+            <span class="badge bg-light text-success mb-3">
+                EVENT TICKET BOOKING
+            </span>
+
+            <h2 class="fw-bold">{{ event.title }}</h2>
+
+            <p class="mb-2">
+                <i class="bi bi-calendar-event me-2"></i>
+                {{ event.start_datetime|date:"l, d F Y" }}
+
+                &nbsp; | &nbsp;
+
+                <i class="bi bi-clock me-1"></i>
+                {{ event.start_datetime|date:"g:i A" }}
+            </p>
+
+            <p class="mb-0">
+                <i class="bi bi-geo-alt me-2"></i>
+
+                {% if event.event_type == 'online' %}
+                    Online Event
+                {% else %}
+                    {{ event.venue_name|default:event.town|default:"Venue to be announced" }}
+                {% endif %}
+            </p>
+
+        </div>
+
+        <!-- PAGE HEADING -->
+        <div class="mb-4">
+
+            <h3 class="fw-bold">Choose Your Ticket</h3>
+
+            <p class="text-muted">
+                Select your preferred ticket category and quantity.
+                Your total will update automatically.
+            </p>
+
+        </div>
+
+        {% if ticket_types %}
+
+        <form id="ticket-selection-form"
+            method="POST"
+            action="{% url 'events:event_booking' event.slug %}">
+
+            {% csrf_token %}
+
+            <!-- TICKET CATEGORIES -->
+            <div class="row g-4">
+
+                {% for ticket in ticket_types %}
+
+                <div class="col-md-6 col-lg-4">
+
+                    <div class="ticket-option">
+
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+
+                            <div>
+
+                                <h4 class="fw-bold mb-1">
+                                    {{ ticket.name }}
+                                </h4>
+
+                                <small class="ticket-stock">
+                                    {{ ticket.remaining_quantity }} tickets remaining
+                                </small>
+
+                            </div>
+
+                            <span class="badge bg-success-subtle text-success">
+                                Available
+                            </span>
+
+                        </div>
+
+                        <div class="ticket-price mb-3">
+
+                            {% if ticket.price == 0 %}
+                                FREE
+                            {% else %}
+                                {{ ticket.currency }} {{ ticket.price|floatformat:2 }}
+                            {% endif %}
+
+                        </div>
+
+                        <p class="ticket-description">
+                            {{ ticket.description|default:"Enjoy access to this event with your selected ticket." }}
+                        </p>
+
+                        <hr>
+
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+
+                            <label for="ticket_{{ ticket.id }}"
+                                   class="fw-semibold">
+                                Quantity
+                            </label>
+
+                            <input type="number"
+                                   id="ticket_{{ ticket.id }}"
+                                   class="form-control ticket-quantity"
+                                   name="ticket_{{ ticket.id }}"
+                                   min="0"
+                                   max="{{ ticket.remaining_quantity }}"
+                                   value="0"
+                                   data-ticket-price="{{ ticket.price }}"
+                                   data-ticket-currency="{{ ticket.currency }}"
+                                   data-ticket-name="{{ ticket.name|escape }}"
+                                   data-ticket-minimum="{{ ticket.minimum_per_order }}"
+                                   data-ticket-maximum="{{ ticket.maximum_per_order }}">
+
+                        </div>
+
+                        <small class="text-muted d-block mt-2">
+                            Minimum {{ ticket.minimum_per_order }}
+                            · Maximum {{ ticket.maximum_per_order }}
+                            per order
+                        </small>
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            <!-- BOOKING SUMMARY -->
+            <div class="booking-summary">
+
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+                    <div>
+                        <h5 class="fw-bold mb-1">
+                            Booking Summary
+                        </h5>
+
+                        <p class="text-muted small mb-0">
+                            Your selected tickets and estimated total.
+                        </p>
+                    </div>
+
+                    <div class="text-end">
+
+                        <div class="text-muted small">
+                            Total Amount
+                        </div>
+
+                        <div class="summary-total"
+                             id="bookingTotal">
+                            KES 0.00
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <hr>
+
+                <div id="selectedTicketsSummary">
+
+                    <p class="text-muted mb-0 small">
+                        No tickets selected yet.
+                    </p>
+
+                </div>
+
+                <div class="booking-note mt-4">
+
+                    <i class="bi bi-info-circle me-2"></i>
+
+                    Select your ticket quantities above. Your booking
+                    will only be confirmed after the checkout and
+                    payment process.
+
+                </div>
+
+                <!-- ACTION BUTTONS -->
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-4 booking-actions">
+
+                    <a href="{% url 'events:event_detail' event.slug %}"
+                       class="btn btn-outline-secondary btn-lg">
+
+                        <i class="bi bi-arrow-left me-1"></i>
+                        Back to Event
+
+                    </a>
+
+                    <button type="submit"
+                            class="continue-booking-btn"
+                            id="continueBookingBtn"
+                            disabled>
+
+                        Continue to Booking
+
+                        <i class="bi bi-arrow-right ms-2"></i>
+
+                    </button>
+
+                </div>
+
+                <div id="bookingValidationMessage"
+                     class="text-danger small mt-3">
+                </div>
+
+            </div>
+
+        </form>
+
+        {% else %}
+
+        <div class="card border-0 shadow-sm text-center p-5">
+
+            <i class="bi bi-ticket-perforated text-muted display-3"></i>
+
+            <h4 class="fw-bold mt-3">
+                Tickets Not Available Yet
+            </h4>
+
+            <p class="text-muted">
+                Ticket categories for this event have not been added,
+                or all tickets have been sold.
+            </p>
+
+            <a href="{% url 'events:event_detail' event.slug %}"
+               class="btn btn-outline-success">
+                Return to Event
+            </a>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const ticketForm = document.getElementById('ticket-selection-form');
+
+    if (!ticketForm) {
+        return;
+    }
+
+    const quantityInputs = document.querySelectorAll('.ticket-quantity');
+    const continueButton = document.getElementById('continueBookingBtn');
+    const totalDisplay = document.getElementById('bookingTotal');
+    const summaryContainer = document.getElementById('selectedTicketsSummary');
+    const validationMessage = document.getElementById('bookingValidationMessage');
+
+    /*
+     * Format currency values.
+     */
+    function formatMoney(amount, currency) {
+
+        return currency + ' ' + amount.toLocaleString(
+            'en-KE',
+            {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }
+        );
+
+    }
+
+    /*
+     * Calculate selected tickets and update the summary.
+     */
+    function updateBookingSummary() {
+
+        let totalAmount = 0;
+        let totalQuantity = 0;
+        let summaryHTML = '';
+        let hasInvalidQuantity = false;
+
+        quantityInputs.forEach(function (input) {
+
+            const quantity = parseInt(input.value, 10) || 0;
+
+            const price = parseFloat(
+                input.dataset.ticketPrice
+            ) || 0;
+
+            const currency = input.dataset.ticketCurrency || 'KES';
+
+            const ticketName = input.dataset.ticketName;
+
+            const minimum = parseInt(
+                input.dataset.ticketMinimum,
+                10
+            ) || 1;
+
+            const maximum = Math.min(
+                parseInt(input.dataset.ticketMaximum, 10) || 10,
+                parseInt(input.max, 10) || 0
+            );
+
+            if (quantity < 0 || quantity > maximum) {
+                hasInvalidQuantity = true;
+            }
+
+            if (quantity > 0 && quantity < minimum) {
+                hasInvalidQuantity = true;
+            }
+
+            if (quantity > 0) {
+
+                const subtotal = quantity * price;
+
+                totalAmount += subtotal;
+                totalQuantity += quantity;
+
+                summaryHTML += `
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <strong>${ticketName}</strong>
+                            <span class="text-muted small"> × ${quantity}</span>
+                        </div>
+                        <strong>${formatMoney(subtotal, currency)}</strong>
+                    </div>
+                `;
+
+            }
+
+        });
+
+        if (totalQuantity === 0) {
+
+            summaryContainer.innerHTML = `
+                <p class="text-muted mb-0 small">
+                    No tickets selected yet.
+                </p>
+            `;
+
+            totalDisplay.textContent = 'KES 0.00';
+
+        } else {
+
+            summaryContainer.innerHTML = summaryHTML;
+
+            totalDisplay.textContent = formatMoney(
+                totalAmount,
+                'KES'
+            );
+
+        }
+
+        continueButton.disabled = (
+            totalQuantity === 0 || hasInvalidQuantity
+        );
+
+        if (hasInvalidQuantity) {
+
+            validationMessage.textContent =
+                'Check the minimum and maximum ticket quantities for your selection.';
+
+        } else {
+
+            validationMessage.textContent = '';
+
+        }
+
+    }
+
+    /*
+     * Prevent invalid quantities while typing.
+     */
+    quantityInputs.forEach(function (input) {
+
+        input.addEventListener('input', function () {
+
+            const maximum = parseInt(input.max, 10) || 0;
+
+            let quantity = parseInt(input.value, 10);
+
+            if (Number.isNaN(quantity)) {
+                quantity = 0;
+            }
+
+            if (quantity < 0) {
+                quantity = 0;
+            }
+
+            if (quantity > maximum) {
+                quantity = maximum;
+            }
+
+            input.value = quantity;
+
+            updateBookingSummary();
+
+        });
+
+    });
+
+    /*
+     * Validate before submitting to Django.
+     */
+    ticketForm.addEventListener('submit', function (event) {
+
+        let valid = true;
+        let selected = false;
+
+        quantityInputs.forEach(function (input) {
+
+            const quantity = parseInt(input.value, 10) || 0;
+
+            const minimum = parseInt(
+                input.dataset.ticketMinimum,
+                10
+            ) || 1;
+
+            const maximum = Math.min(
+                parseInt(input.dataset.ticketMaximum, 10) || 10,
+                parseInt(input.max, 10) || 0
+            );
+
+            if (quantity > 0) {
+
+                selected = true;
+
+                if (quantity < minimum || quantity > maximum) {
+                    valid = false;
+                }
+
+            }
+
+        });
+
+        if (!selected || !valid) {
+
+            event.preventDefault();
+
+            validationMessage.textContent =
+                'Please select at least one ticket and check the allowed quantities.';
+
+        }
+
+    });
+
+    /*
+     * Initial page setup.
+     */
+    updateBookingSummary();
+
+});
+</script>
+
+{% endblock %}

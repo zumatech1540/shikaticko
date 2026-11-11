@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ page_title }} | EventHub{% endblock %}
+
+{% block content %}
+
+<section class="auth-section">
+    <div class="container">
+        <div class="auth-card">
+
+            <div class="auth-header">
+                <div class="auth-icon">
+                    <i class="bi bi-person-plus-fill"></i>
+                </div>
+
+                <h2>{{ page_title }}</h2>
+
+                {% if account_type == 'organizer' %}
+                    <p>Create an account to publish and manage events.</p>
+                {% else %}
+                    <p>Create an account to discover and book exciting events.</p>
+                {% endif %}
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                {% for field in form %}
+                    <div class="mb-3">
+
+                        <label class="form-label" for="{{ field.id_for_label }}">
+                            {{ field.label }}
+                        </label>
+
+                        {{ field }}
+
+                        {% if field.help_text %}
+                            <div class="form-text">
+                                {{ field.help_text|safe }}
+                            </div>
+                        {% endif %}
+
+                        {% for error in field.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+
+                    </div>
+                {% endfor %}
+
+                <button type="submit" class="btn btn-primary w-100 auth-button">
+                    Create Account
+                </button>
+
+            </form>
+
+            <div class="auth-footer">
+                Already have an account?
+                <a href="{% url 'accounts:login' %}">Login here</a>
+            </div>
+
+            {% if account_type == 'organizer' %}
+                <div class="auth-switch">
+                    Registering as a customer?
+                    <a href="{% url 'accounts:register' %}">Customer registration</a>
+                </div>
+            {% else %}
+                <div class="auth-switch">
+                    Want to organize events?
+                    <a href="{% url 'accounts:organizer_register' %}">
+                        Register as an organizer
+                    </a>
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+</section>
+
+{% endblock %}
