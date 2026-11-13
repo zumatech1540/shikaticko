@@ -1,136 +1,827 @@
 
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Discover Events | EventHub{% endblock %}
+{% block title %}Explore Events | ShikaTicko{% endblock %}
 
 {% block content %}
 
 <style>
-    .events-marketplace {
-        overflow: hidden;
+    :root {
+        --st-dark: #101828;
+        --st-navy: #172b4d;
+        --st-green: #198754;
+        --st-green-dark: #146c43;
+        --st-light: #f5f8fc;
+        --st-muted: #667085;
+        --st-border: #e8edf3;
+        --st-radius: 20px;
+        --st-shadow: 0 12px 35px rgba(16, 24, 40, .07);
     }
 
-    /* EVENT ACTIONS */
+    .events-marketplace {
+        overflow: hidden;
+        background: #fff;
+        color: #344054;
+    }
+
+    /* HERO */
+    .events-hero {
+        position: relative;
+        overflow: hidden;
+        padding: 95px 0 115px;
+        color: #fff;
+        background:
+            radial-gradient(circle at 85% 15%, rgba(25,135,84,.32), transparent 28%),
+            radial-gradient(circle at 8% 90%, rgba(59,130,246,.17), transparent 30%),
+            linear-gradient(125deg, #101828 0%, #172b4d 58%, #123d39 100%);
+    }
+
+    .events-hero::before,
+    .events-hero::after {
+        content: "";
+        position: absolute;
+        border: 1px solid rgba(255,255,255,.10);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .events-hero::before {
+        width: 440px;
+        height: 440px;
+        right: -140px;
+        top: -220px;
+    }
+
+    .events-hero::after {
+        width: 300px;
+        height: 300px;
+        left: -150px;
+        bottom: -190px;
+    }
+
+    .events-hero .container {
+        position: relative;
+        z-index: 2;
+    }
+
+    .events-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        padding: 9px 17px;
+        border: 1px solid rgba(255,255,255,.2);
+        border-radius: 50px;
+        background: rgba(255,255,255,.08);
+        color: #a7f3d0;
+        font-size: .75rem;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+    }
+
+    .events-hero h1 {
+        max-width: 720px;
+        margin: 25px 0 18px;
+        color: #fff;
+        font-size: clamp(2.7rem, 5vw, 4.5rem);
+        font-weight: 850;
+        line-height: 1.12;
+        letter-spacing: -2px;
+    }
+
+    .events-hero h1 span {
+        color: #6ee7a8;
+    }
+
+    .events-hero-description {
+        max-width: 620px;
+        margin-bottom: 28px;
+        color: #d0d5dd;
+        font-size: 1.08rem;
+        line-height: 1.85;
+    }
+
+    /* SEARCH */
+    .marketplace-search {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        max-width: 680px;
+        padding: 10px 11px 10px 19px;
+        border: 1px solid rgba(255,255,255,.5);
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 15px 40px rgba(0,0,0,.16);
+    }
+
+    .marketplace-search > i {
+        color: var(--st-green);
+        font-size: 1.3rem;
+    }
+
+    .marketplace-search input {
+        flex: 1;
+        width: 100%;
+        min-width: 0;
+        padding: 12px 0;
+        border: 0;
+        outline: none;
+        background: transparent;
+        color: var(--st-dark);
+        font-size: .95rem;
+    }
+
+    .marketplace-search input::placeholder {
+        color: #98a2b3;
+    }
+
+    .marketplace-search button {
+        flex-shrink: 0;
+        padding: 13px 22px;
+        border: 0;
+        border-radius: 11px;
+        background: var(--st-green);
+        color: #fff;
+        font-weight: 750;
+        transition: .25s ease;
+    }
+
+    .marketplace-search button:hover {
+        background: var(--st-green-dark);
+        transform: translateY(-2px);
+    }
+
+    /* HERO STATS */
+    .events-hero-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 38px;
+        margin-top: 30px;
+    }
+
+    .events-hero-stats div {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .events-hero-stats strong {
+        color: #fff;
+        font-size: 1.65rem;
+        font-weight: 850;
+    }
+
+    .events-hero-stats span {
+        color: #cbd5e1;
+        font-size: .83rem;
+    }
+
+    /* HERO VISUAL */
+    .events-hero-visual {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 340px;
+    }
+
+    .hero-visual-circle {
+        width: 245px;
+        height: 245px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(255,255,255,.2);
+        border-radius: 50%;
+        background: linear-gradient(145deg, rgba(110,231,168,.2), rgba(255,255,255,.05));
+        box-shadow: 0 25px 70px rgba(0,0,0,.15);
+    }
+
+    .hero-visual-circle i {
+        color: #a7f3d0;
+        font-size: 8rem;
+    }
+
+    .hero-floating-card {
+        position: absolute;
+        top: 35px;
+        left: 0;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        padding: 16px 19px;
+        border: 1px solid rgba(255,255,255,.2);
+        border-radius: 16px;
+        background: rgba(255,255,255,.12);
+        backdrop-filter: blur(12px);
+        box-shadow: 0 15px 35px rgba(0,0,0,.13);
+    }
+
+    .hero-floating-card > i {
+        color: #6ee7a8;
+        font-size: 2rem;
+    }
+
+    .hero-floating-card div {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .hero-floating-card strong {
+        color: #fff;
+        font-size: .86rem;
+    }
+
+    .hero-floating-card span {
+        color: #d0d5dd;
+        font-size: .76rem;
+    }
+
+    .hero-floating-badge {
+        position: absolute;
+        right: 0;
+        bottom: 40px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 13px 18px;
+        border-radius: 50px;
+        background: #fff;
+        color: var(--st-dark);
+        font-size: .82rem;
+        font-weight: 800;
+        box-shadow: 0 12px 30px rgba(0,0,0,.15);
+    }
+
+    .hero-floating-badge i {
+        color: var(--st-green);
+    }
+
+    /* GENERAL SECTIONS */
+    .event-category-section,
+    .featured-events-section,
+    .all-events-section,
+    .organizer-promo-section {
+        padding-top: 65px;
+    }
+
+    .all-events-section {
+        padding-bottom: 75px;
+    }
+
+    .section-heading-row {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 27px;
+    }
+
+    .section-kicker {
+        display: inline-block;
+        margin-bottom: 9px;
+        color: var(--st-green);
+        font-size: .74rem;
+        font-weight: 850;
+        letter-spacing: 1.5px;
+    }
+
+    .section-heading-row h2 {
+        margin: 0 0 8px;
+        color: var(--st-dark);
+        font-size: clamp(1.65rem, 3vw, 2.1rem);
+        font-weight: 850;
+        letter-spacing: -.8px;
+    }
+
+    .section-heading-row p {
+        margin: 0;
+        color: var(--st-muted);
+        line-height: 1.7;
+    }
+
+    .view-all-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--st-green);
+        font-weight: 750;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .view-all-link:hover {
+        color: var(--st-green-dark);
+    }
+
+    /* CATEGORY FILTERS */
+    .event-category-list {
+        display: flex;
+        gap: 11px;
+        padding-bottom: 5px;
+        overflow-x: auto;
+        scrollbar-width: thin;
+    }
+
+    .event-category-chip {
+        display: inline-flex;
+        flex-shrink: 0;
+        align-items: center;
+        gap: 9px;
+        padding: 11px 18px;
+        border: 1px solid var(--st-border);
+        border-radius: 50px;
+        background: #fff;
+        color: #475467;
+        font-size: .87rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all .2s ease;
+    }
+
+    .event-category-chip i {
+        color: var(--st-green);
+    }
+
+    .event-category-chip:hover,
+    .event-category-chip.active {
+        border-color: var(--st-green);
+        background: var(--st-green);
+        color: #fff;
+    }
+
+    .event-category-chip:hover i,
+    .event-category-chip.active i {
+        color: #fff;
+    }
+
+    /* EVENT CARDS */
+    .event-card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid var(--st-border);
+        border-radius: var(--st-radius);
+        background: #fff;
+        box-shadow: 0 5px 20px rgba(16,24,40,.035);
+        transition: transform .28s ease, box-shadow .28s ease;
+    }
+
+    .event-card:hover {
+        transform: translateY(-6px);
+        box-shadow: var(--st-shadow);
+    }
+
+    .event-card-image {
+        position: relative;
+        height: 225px;
+        overflow: hidden;
+        background: #edf2f7;
+    }
+
+    .event-card-image img {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+        transition: transform .45s ease;
+    }
+
+    .event-card:hover .event-card-image img {
+        transform: scale(1.045);
+    }
+
+    .event-image-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background:
+            radial-gradient(circle at 20% 20%, rgba(110,231,168,.25), transparent 35%),
+            linear-gradient(145deg, #e8f7ef, #e9f0fb);
+        color: var(--st-green);
+        font-size: 3.5rem;
+    }
+
+    .event-featured-label,
+    .event-type-label {
+        position: absolute;
+        top: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 11px;
+        border-radius: 50px;
+        font-size: .72rem;
+        font-weight: 800;
+    }
+
+    .event-featured-label {
+        left: 14px;
+        background: #fff;
+        color: #9a6700;
+    }
+
+    .event-type-label {
+        right: 14px;
+        background: rgba(16,24,40,.78);
+        color: #fff;
+        backdrop-filter: blur(5px);
+    }
+
+    .event-card-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 22px;
+    }
+
+    .event-card-category {
+        margin-bottom: 9px;
+        color: var(--st-green);
+        font-size: .75rem;
+        font-weight: 850;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+    }
+
+    .event-card h3 {
+        margin: 0 0 11px;
+        color: var(--st-dark);
+        font-size: 1.2rem;
+        font-weight: 850;
+        line-height: 1.4;
+    }
+
+    .event-card h3 a {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .event-card h3 a:hover {
+        color: var(--st-green);
+    }
+
+    .event-card-description {
+        flex: 1;
+        margin-bottom: 19px;
+        color: var(--st-muted);
+        font-size: .91rem;
+        line-height: 1.7;
+    }
+
+    .event-card-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding-bottom: 17px;
+        border-bottom: 1px solid #edf0f4;
+    }
+
+    .event-card-meta span {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        color: #667085;
+        font-size: .83rem;
+    }
+
+    .event-card-meta i {
+        width: 17px;
+        color: var(--st-green);
+        font-size: .95rem;
+    }
+
+    /* PRICE AND ACTIONS */
     .event-card-footer {
         display: flex;
         flex-direction: column;
         gap: 14px;
-        padding-top: 16px;
-        border-top: 1px solid #edf0f4;
         margin-top: 16px;
     }
 
     .event-price {
         display: flex;
-        justify-content: space-between;
         align-items: center;
+        justify-content: space-between;
+        gap: 10px;
     }
 
     .event-price strong {
-        font-size: 1rem;
+        color: var(--st-dark);
+        font-size: .95rem;
+    }
+
+    .event-price .free-price {
+        color: var(--st-green);
     }
 
     .event-action-buttons {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 9px;
-        width: 100%;
     }
 
     .event-action-buttons a {
         display: inline-flex;
-        justify-content: center;
         align-items: center;
-        gap: 6px;
-        padding: 11px 10px;
-        border-radius: 9px;
-        text-decoration: none;
-        font-size: .88rem;
-        font-weight: 700;
-        transition: all .2s ease;
+        justify-content: center;
+        gap: 7px;
+        min-width: 0;
+        padding: 11px 8px;
+        border: 1px solid transparent;
+        border-radius: 10px;
+        font-size: .82rem;
+        font-weight: 750;
         text-align: center;
+        text-decoration: none;
+        transition: all .2s ease;
     }
 
     .event-view-btn {
-        background: #f0f4f8;
-        color: #263747;
-        border: 1px solid #dce3eb;
+        border-color: #dce3eb !important;
+        background: #f5f7fa;
+        color: #344054;
     }
 
     .event-view-btn:hover {
-        background: #e1eaf2;
-        color: #102a43;
+        background: #e8edf3;
+        color: var(--st-dark);
         transform: translateY(-2px);
     }
 
     .event-book-btn {
-        background: #198754;
+        border-color: var(--st-green) !important;
+        background: var(--st-green);
         color: #fff;
-        border: 1px solid #198754;
     }
 
     .event-book-btn:hover {
-        background: #146c43;
+        border-color: var(--st-green-dark) !important;
+        background: var(--st-green-dark);
         color: #fff;
-        border-color: #146c43;
         transform: translateY(-2px);
-        box-shadow: 0 5px 12px rgba(25, 135, 84, .2);
+        box-shadow: 0 5px 14px rgba(25,135,84,.2);
     }
 
-    .event-book-btn i,
-    .event-view-btn i {
-        font-size: 1rem;
+    /* FEATURED CARD */
+    .featured-event-card {
+        border-color: #d9eadf;
     }
 
-    .event-card {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
+    /* EMPTY STATE */
+    .events-empty-state {
+        padding: 65px 25px;
+        border: 1px dashed #cbd5e1;
+        border-radius: 22px;
+        background: #f8fafc;
+        text-align: center;
     }
 
-    .event-card-body {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-    }
-
-    .event-card-description {
-        flex: 1;
-    }
-
-    .event-card-image img {
-        width: 100%;
-        height: 230px;
-        object-fit: cover;
-    }
-
-    .event-image-placeholder {
-        width: 100%;
-        height: 230px;
+    .empty-state-icon {
+        width: 85px;
+        height: 85px;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #eaf0f5;
-        color: #198754;
-        font-size: 3rem;
+        margin: 0 auto 22px;
+        border-radius: 25px;
+        background: #e8f7ef;
+        color: var(--st-green);
+        font-size: 2.7rem;
     }
 
-    @media (max-width: 575px) {
-        .event-card-image img,
-        .event-image-placeholder {
+    .events-empty-state h3 {
+        margin-bottom: 12px;
+        color: var(--st-dark);
+        font-size: 1.55rem;
+        font-weight: 850;
+    }
+
+    .events-empty-state p {
+        max-width: 540px;
+        margin: 0 auto 23px;
+        color: var(--st-muted);
+        line-height: 1.8;
+    }
+
+    .event-primary-btn {
+        padding: 12px 23px;
+        border-radius: 50px;
+        background: var(--st-green);
+        color: #fff;
+        font-weight: 750;
+    }
+
+    .event-primary-btn:hover {
+        background: var(--st-green-dark);
+        color: #fff;
+    }
+
+    /* PAGINATION */
+    .event-pagination .page-link {
+        margin: 0 3px;
+        border: 1px solid var(--st-border);
+        border-radius: 9px !important;
+        color: var(--st-dark);
+        font-weight: 650;
+    }
+
+    .event-pagination .page-item.active .page-link {
+        border-color: var(--st-green);
+        background: var(--st-green);
+        color: #fff;
+    }
+
+    /* ORGANIZER PROMO */
+    .organizer-promo-section {
+        padding-bottom: 80px;
+    }
+
+    .organizer-promo {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 30px;
+        overflow: hidden;
+        padding: 42px 45px;
+        border-radius: 24px;
+        background:
+            radial-gradient(circle at 90% 10%, rgba(110,231,168,.17), transparent 30%),
+            linear-gradient(120deg, #14233d, #173d35);
+        color: #fff;
+    }
+
+    .organizer-promo > div {
+        position: relative;
+        z-index: 1;
+    }
+
+    .organizer-promo span {
+        color: #6ee7a8;
+        font-size: .75rem;
+        font-weight: 850;
+        letter-spacing: 1.5px;
+    }
+
+    .organizer-promo h2 {
+        margin: 12px 0;
+        color: #fff;
+        font-size: clamp(1.6rem, 3vw, 2.2rem);
+        font-weight: 850;
+    }
+
+    .organizer-promo p {
+        max-width: 600px;
+        margin: 0;
+        color: #d0d5dd;
+        line-height: 1.8;
+    }
+
+    .organizer-promo > a {
+        position: relative;
+        z-index: 1;
+        display: inline-flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 14px 23px;
+        border-radius: 50px;
+        background: #fff;
+        color: var(--st-dark);
+        font-size: .9rem;
+        font-weight: 800;
+        text-decoration: none;
+        transition: .25s ease;
+    }
+
+    .organizer-promo > a:hover {
+        transform: translateY(-3px);
+        background: #6ee7a8;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 991px) {
+        .events-hero {
+            padding: 75px 0 95px;
+        }
+
+        .events-hero-visual {
+            min-height: 280px;
+            margin-top: 35px;
+        }
+
+        .hero-visual-circle {
+            width: 210px;
             height: 210px;
         }
 
+        .hero-visual-circle i {
+            font-size: 6.5rem;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .events-hero {
+            padding: 70px 0 85px;
+        }
+
+        .events-hero h1 {
+            font-size: clamp(2.3rem, 9vw, 3.2rem);
+            letter-spacing: -1.2px;
+        }
+
+        .events-hero-description {
+            font-size: .97rem;
+        }
+
+        .marketplace-search {
+            flex-wrap: wrap;
+            gap: 9px;
+            padding: 10px;
+        }
+
+        .marketplace-search input {
+            flex: 1;
+        }
+
+        .marketplace-search button {
+            width: 100%;
+        }
+
+        .events-hero-stats {
+            gap: 25px;
+        }
+
+        .event-category-section,
+        .featured-events-section,
+        .all-events-section {
+            padding-top: 48px;
+        }
+
+        .all-events-section {
+            padding-bottom: 55px;
+        }
+
+        .section-heading-row {
+            align-items: flex-start;
+        }
+
+        .event-card-image {
+            height: 215px;
+        }
+
+        .organizer-promo-section {
+            padding-bottom: 55px;
+        }
+
+        .organizer-promo {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 32px 25px;
+        }
+
+        .organizer-promo > a {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 420px) {
+        .event-card-body {
+            padding: 18px;
+        }
+
         .event-action-buttons a {
-            font-size: .82rem;
-            padding: 10px 6px;
+            gap: 5px;
+            padding: 10px 5px;
+            font-size: .76rem;
+        }
+
+        .events-hero-stats strong {
+            font-size: 1.4rem;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .event-card,
+        .event-card-image img,
+        .event-action-buttons a,
+        .organizer-promo > a {
+            transition: none;
         }
     }
 </style>
 
+
 <div class="events-marketplace">
 
-    <!-- HERO SECTION -->
+    <!-- HERO -->
     <section class="events-hero">
         <div class="container">
             <div class="row align-items-center">
@@ -138,7 +829,7 @@
                 <div class="col-lg-7">
 
                     <span class="events-eyebrow">
-                        <i class="bi bi-calendar-event"></i>
+                        <i class="bi bi-stars"></i>
                         DISCOVER EXPERIENCES
                     </span>
 
@@ -148,12 +839,17 @@
                         Experience.
                     </h1>
 
-                    <p>
+                    <p class="events-hero-description">
                         Discover concerts, festivals, sports, conferences
                         and exciting experiences happening around you.
+                        Find your next adventure and book your tickets
+                        with confidence.
                     </p>
 
-                    <form method="GET" class="marketplace-search">
+                    <form method="GET"
+                          action="{% url 'events:public_events' %}"
+                          class="marketplace-search">
+
                         <i class="bi bi-search"></i>
 
                         <input
@@ -161,9 +857,20 @@
                             name="q"
                             value="{{ search_query|default:'' }}"
                             placeholder="Search events, locations or organizers..."
+                            aria-label="Search events"
                         >
 
-                        <button type="submit">Search Events</button>
+                        {% if selected_category %}
+                            <input type="hidden"
+                                   name="category"
+                                   value="{{ selected_category }}">
+                        {% endif %}
+
+                        <button type="submit">
+                            Search Events
+                            <i class="bi bi-arrow-right ms-1"></i>
+                        </button>
+
                     </form>
 
                     <div class="events-hero-stats">
@@ -185,7 +892,6 @@
 
                         <div class="hero-floating-card">
                             <i class="bi bi-ticket-perforated-fill"></i>
-
                             <div>
                                 <strong>Your next experience awaits</strong>
                                 <span>Discover. Book. Enjoy.</span>
@@ -208,6 +914,7 @@
         </div>
     </section>
 
+
     <!-- CATEGORY FILTERS -->
     <section class="container event-category-section">
 
@@ -215,9 +922,11 @@
             <div>
                 <span class="section-kicker">EXPLORE BY INTEREST</span>
                 <h2>Browse Categories</h2>
+                <p>Find experiences that match what you love.</p>
             </div>
 
-            <a href="{% url 'events:public_events' %}" class="view-all-link">
+            <a href="{% url 'events:public_events' %}"
+               class="view-all-link">
                 All Events <i class="bi bi-arrow-right"></i>
             </a>
         </div>
@@ -231,7 +940,7 @@
             </a>
 
             {% for category in categories %}
-                <a href="?category={{ category.slug }}"
+                <a href="?category={{ category.slug }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
                    class="event-category-chip {% if selected_category == category.slug %}active{% endif %}">
 
                     {% if category.icon %}
@@ -246,6 +955,7 @@
 
         </div>
     </section>
+
 
     <!-- FEATURED EVENTS -->
     {% if featured_events %}
@@ -271,7 +981,8 @@
 
                         {% if event.cover_image %}
                             <img src="{{ event.cover_image.url }}"
-                                 alt="{{ event.title }}">
+                                 alt="{{ event.title }}"
+                                 loading="lazy">
                         {% else %}
                             <div class="event-image-placeholder">
                                 <i class="bi bi-calendar-event"></i>
@@ -323,7 +1034,6 @@
 
                             <span>
                                 <i class="bi bi-geo-alt"></i>
-
                                 {% if event.town %}
                                     {{ event.town }}
                                 {% elif event.venue_name %}
@@ -376,6 +1086,7 @@
     </section>
     {% endif %}
 
+
     <!-- ALL EVENTS -->
     <section class="container all-events-section">
 
@@ -399,7 +1110,8 @@
 
                         {% if event.cover_image %}
                             <img src="{{ event.cover_image.url }}"
-                                 alt="{{ event.title }}">
+                                 alt="{{ event.title }}"
+                                 loading="lazy">
                         {% else %}
                             <div class="event-image-placeholder">
                                 <i class="bi bi-calendar-event"></i>
@@ -446,7 +1158,6 @@
 
                             <span>
                                 <i class="bi bi-geo-alt"></i>
-
                                 {% if event.town %}
                                     {{ event.town }}
                                 {% elif event.venue_name %}
@@ -511,6 +1222,7 @@
 
                     <a href="{% url 'events:public_events' %}"
                        class="btn event-primary-btn">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>
                         Browse All Events
                     </a>
 
@@ -522,17 +1234,19 @@
 
         </div>
 
+
         <!-- PAGINATION -->
         {% if page_obj and page_obj.has_other_pages %}
         <div class="d-flex justify-content-center mt-5">
 
             <nav aria-label="Event pagination">
-                <ul class="pagination">
+                <ul class="pagination event-pagination">
 
                     {% if page_obj.has_previous %}
                     <li class="page-item">
                         <a class="page-link"
-                           href="?page={{ page_obj.previous_page_number }}">
+                           href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if selected_category %}&category={{ selected_category|urlencode }}{% endif %}">
+                            <i class="bi bi-chevron-left"></i>
                             Previous
                         </a>
                     </li>
@@ -547,8 +1261,9 @@
                     {% if page_obj.has_next %}
                     <li class="page-item">
                         <a class="page-link"
-                           href="?page={{ page_obj.next_page_number }}">
+                           href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if selected_category %}&category={{ selected_category|urlencode }}{% endif %}">
                             Next
+                            <i class="bi bi-chevron-right"></i>
                         </a>
                     </li>
                     {% endif %}
@@ -561,6 +1276,7 @@
 
     </section>
 
+
     <!-- ORGANIZER CTA -->
     <section class="container organizer-promo-section">
 
@@ -572,8 +1288,9 @@
                 <h2>Have an Event to Share?</h2>
 
                 <p>
-                    Bring your event to a wider audience. Create your event
-                    and let people discover what you are planning.
+                    Bring your event to a wider audience. Create your event,
+                    showcase your brand, reach more people and manage
+                    your ticket sales from one platform.
                 </p>
             </div>
 
