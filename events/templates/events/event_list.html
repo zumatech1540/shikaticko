@@ -217,14 +217,14 @@
                 <h2>Browse Categories</h2>
             </div>
 
-            <a href="{% url 'events:event_list' %}" class="view-all-link">
+            <a href="{% url 'events:public_events' %}" class="view-all-link">
                 All Events <i class="bi bi-arrow-right"></i>
             </a>
         </div>
 
         <div class="event-category-list">
 
-            <a href="{% url 'events:event_list' %}"
+            <a href="{% url 'events:public_events' %}"
                class="event-category-chip {% if not selected_category %}active{% endif %}">
                 <i class="bi bi-grid"></i>
                 All Events
@@ -509,7 +509,7 @@
                         Try another search or check again later.
                     </p>
 
-                    <a href="{% url 'events:event_list' %}"
+                    <a href="{% url 'events:public_events' %}"
                        class="btn event-primary-btn">
                         Browse All Events
                     </a>
