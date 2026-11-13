@@ -5,73 +5,435 @@
 
 {% block content %}
 
+<style>
+    :root {
+        --contact-dark: #101828;
+        --contact-navy: #172b4d;
+        --contact-green: #198754;
+        --contact-light: #f5f8fc;
+        --contact-muted: #667085;
+    }
+
+    .contact-page {
+        overflow: hidden;
+        background: #fff;
+        color: #344054;
+    }
+
+    /* HERO */
+    .contact-hero {
+        position: relative;
+        overflow: hidden;
+        padding: 90px 0 115px;
+        text-align: center;
+        color: #fff;
+        background:
+            radial-gradient(circle at 85% 15%, rgba(25,135,84,.32), transparent 28%),
+            radial-gradient(circle at 10% 90%, rgba(59,130,246,.16), transparent 30%),
+            linear-gradient(125deg, #101828, #172b4d 60%, #123d39);
+    }
+
+    .contact-hero::before,
+    .contact-hero::after {
+        content: "";
+        position: absolute;
+        border: 1px solid rgba(255,255,255,.10);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .contact-hero::before {
+        width: 430px;
+        height: 430px;
+        right: -150px;
+        top: -210px;
+    }
+
+    .contact-hero::after {
+        width: 300px;
+        height: 300px;
+        left: -150px;
+        bottom: -180px;
+    }
+
+    .contact-hero .container {
+        position: relative;
+        z-index: 1;
+    }
+
+    .contact-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 17px;
+        border: 1px solid rgba(255,255,255,.2);
+        border-radius: 50px;
+        background: rgba(255,255,255,.09);
+        color: #a7f3d0;
+        font-size: .76rem;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+    }
+
+    .contact-hero h1 {
+        margin: 25px 0 15px;
+        font-size: clamp(2.5rem, 5vw, 4rem);
+        font-weight: 850;
+        letter-spacing: -1.8px;
+    }
+
+    .contact-hero h1 span {
+        color: #6ee7a8;
+    }
+
+    .contact-hero p {
+        max-width: 700px;
+        margin: auto;
+        color: #d0d5dd;
+        font-size: 1.08rem;
+        line-height: 1.8;
+    }
+
+    /* CONTENT */
+    .contact-content {
+        padding: 75px 0 90px;
+        background: #f8fafc;
+    }
+
+    /* CONTACT INFORMATION */
+    .contact-info-card {
+        position: relative;
+        height: 100%;
+        min-height: 530px;
+        padding: 40px 34px;
+        overflow: hidden;
+        border-radius: 23px;
+        background:
+            radial-gradient(circle at 90% 5%, rgba(110,231,168,.15), transparent 28%),
+            linear-gradient(145deg, #14233d, #173d35);
+        color: #fff;
+        box-shadow: 0 15px 40px rgba(16,24,40,.09);
+    }
+
+    .contact-info-card::after {
+        content: "";
+        position: absolute;
+        width: 240px;
+        height: 240px;
+        right: -120px;
+        bottom: -120px;
+        border: 1px solid rgba(255,255,255,.13);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .contact-info-card h2 {
+        margin-bottom: 15px;
+        font-size: 1.85rem;
+        font-weight: 850;
+    }
+
+    .contact-description {
+        margin-bottom: 38px;
+        color: #d0d5dd;
+        line-height: 1.8;
+    }
+
+    .contact-info-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 17px;
+        margin-bottom: 30px;
+    }
+
+    .contact-info-icon {
+        width: 49px;
+        height: 49px;
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 14px;
+        background: rgba(255,255,255,.10);
+        color: #6ee7a8;
+        font-size: 1.3rem;
+    }
+
+    .contact-info-item h5 {
+        margin-bottom: 6px;
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .contact-info-item p {
+        margin: 0;
+        color: #cbd5e1;
+        font-size: .9rem;
+        line-height: 1.7;
+    }
+
+    .contact-info-note {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 38px;
+        padding-top: 22px;
+        border-top: 1px solid rgba(255,255,255,.15);
+        color: #a7f3d0;
+        font-size: .86rem;
+    }
+
+    /* FORM CARD */
+    .contact-form-card {
+        height: 100%;
+        padding: 40px;
+        border: 1px solid #edf0f4;
+        border-radius: 23px;
+        background: #fff;
+        box-shadow: 0 15px 40px rgba(16,24,40,.055);
+    }
+
+    .contact-form-heading {
+        margin-bottom: 30px;
+    }
+
+    .contact-form-heading h2 {
+        margin-bottom: 9px;
+        color: var(--contact-dark);
+        font-size: 1.75rem;
+        font-weight: 850;
+    }
+
+    .contact-form-heading p {
+        margin: 0;
+        color: var(--contact-muted);
+        line-height: 1.7;
+    }
+
+    .contact-form-card .form-label {
+        margin-bottom: 8px;
+        color: #344054;
+        font-size: .88rem;
+        font-weight: 750;
+    }
+
+    .contact-form-card input,
+    .contact-form-card textarea,
+    .contact-form-card select {
+        width: 100%;
+        padding: 13px 15px;
+        border: 1px solid #e4e7ec;
+        border-radius: 11px;
+        outline: none;
+        background: #fbfcfe;
+        color: var(--contact-dark);
+        font-size: .94rem;
+        transition: all .25s ease;
+    }
+
+    .contact-form-card input:focus,
+    .contact-form-card textarea:focus,
+    .contact-form-card select:focus {
+        border-color: var(--contact-green);
+        background: #fff;
+        box-shadow: 0 0 0 4px rgba(25,135,84,.09);
+    }
+
+    .contact-form-card textarea {
+        min-height: 150px;
+        resize: vertical;
+    }
+
+    .contact-form-card input::placeholder,
+    .contact-form-card textarea::placeholder {
+        color: #98a2b3;
+    }
+
+    .contact-field-error {
+        display: block;
+        margin-top: 6px;
+        color: #dc3545;
+        font-size: .82rem;
+    }
+
+    .contact-submit-btn {
+        display: inline-flex;
+        width: 100%;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 15px 24px;
+        border: 0;
+        border-radius: 12px;
+        background: var(--contact-green);
+        color: #fff;
+        font-size: .98rem;
+        font-weight: 800;
+        transition: all .25s ease;
+    }
+
+    .contact-submit-btn:hover {
+        background: #146c43;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(25,135,84,.18);
+    }
+
+    .contact-submit-btn i {
+        transition: transform .25s ease;
+    }
+
+    .contact-submit-btn:hover i {
+        transform: translateX(4px);
+    }
+
+    .contact-privacy-note {
+        margin-top: 16px;
+        color: #98a2b3;
+        font-size: .8rem;
+        text-align: center;
+    }
+
+    .contact-privacy-note i {
+        color: var(--contact-green);
+    }
+
+    @media(max-width: 991px) {
+        .contact-info-card {
+            min-height: auto;
+        }
+    }
+
+    @media(max-width: 767px) {
+        .contact-hero {
+            padding: 75px 0 90px;
+        }
+
+        .contact-hero h1 {
+            letter-spacing: -1px;
+        }
+
+        .contact-content {
+            padding: 50px 0 65px;
+        }
+
+        .contact-info-card {
+            padding: 30px 24px;
+        }
+
+        .contact-form-card {
+            padding: 28px 21px;
+        }
+
+        .contact-form-heading h2 {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+
 <div class="contact-page">
 
     <!-- HERO SECTION -->
     <section class="contact-hero">
         <div class="container">
-            <span class="contact-badge">WE ARE HERE TO HELP</span>
 
-            <h1>Let's Start a Conversation</h1>
+            <span class="contact-badge">
+                <i class="bi bi-chat-dots"></i>
+                WE ARE HERE TO HELP
+            </span>
+
+            <h1>
+                Let's Start a <span>Conversation.</span>
+            </h1>
 
             <p>
                 Have a question about booking tickets, organizing an event
-                or using our platform? Send us a message. We would love to hear from you.
+                or using EventHub? Send us a message. We'd love to hear from you.
             </p>
+
         </div>
     </section>
+
 
     <!-- CONTACT CONTENT -->
     <section class="contact-content">
         <div class="container">
 
-            <div class="row g-4">
+            <div class="row g-4 align-items-stretch">
 
                 <!-- CONTACT INFORMATION -->
                 <div class="col-lg-5">
 
                     <div class="contact-info-card">
 
+                        <span class="contact-badge mb-4">
+                            CONTACT EVENTHUB
+                        </span>
+
                         <h2>Get In Touch</h2>
 
                         <p class="contact-description">
-                            Our team is ready to assist you with event discovery,
-                            ticket booking and event management.
+                            Whether you're attending an event or organizing
+                            one, our team is ready to help make your experience
+                            simple and convenient.
                         </p>
+
 
                         <div class="contact-info-item">
                             <div class="contact-info-icon">
                                 <i class="bi bi-envelope"></i>
                             </div>
+
                             <div>
-                                <h5>Email Us</h5>
-                                <p>Send us your enquiries through our contact form.</p>
+                                <h5>Email Enquiries</h5>
+                                <p>
+                                    Send your questions and enquiries through
+                                    our secure contact form.
+                                </p>
                             </div>
                         </div>
+
 
                         <div class="contact-info-item">
                             <div class="contact-info-icon">
                                 <i class="bi bi-calendar-event"></i>
                             </div>
+
                             <div>
                                 <h5>Event Support</h5>
-                                <p>Get assistance with event publishing and ticket bookings.</p>
+                                <p>
+                                    Get assistance with event publishing,
+                                    ticket sales and event management.
+                                </p>
                             </div>
                         </div>
 
+
                         <div class="contact-info-item">
                             <div class="contact-info-icon">
-                                <i class="bi bi-headset"></i>
+                                <i class="bi bi-ticket-perforated"></i>
                             </div>
+
                             <div>
-                                <h5>Customer Support</h5>
-                                <p>We are committed to making your experience seamless.</p>
+                                <h5>Booking Assistance</h5>
+                                <p>
+                                    Need help with a booking, payment or
+                                    your event ticket? We're here to assist.
+                                </p>
                             </div>
+                        </div>
+
+
+                        <div class="contact-info-note">
+                            <i class="bi bi-shield-check"></i>
+                            Your enquiries matter to us.
                         </div>
 
                     </div>
 
                 </div>
+
 
                 <!-- CONTACT FORM -->
                 <div class="col-lg-7">
@@ -79,69 +441,137 @@
                     <div class="contact-form-card">
 
                         <div class="contact-form-heading">
-                            <h2>Send Us a Message</h2>
-                            <p>Complete the form below and our team will get back to you.</p>
+
+                            <span class="contact-badge"
+                                  style="background:#e8f7ef;color:#198754;border:0;">
+                                SEND AN ENQUIRY
+                            </span>
+
+                            <h2 class="mt-3">Send Us a Message</h2>
+
+                            <p>
+                                Complete the form below with your details
+                                and we'll get back to you.
+                            </p>
+
                         </div>
 
-                        <form method="POST" action="{% url 'core:contact' %}">
+
+                        <form method="POST"
+                              action="{% url 'core:contact' %}">
+
                             {% csrf_token %}
 
                             {% if form.non_field_errors %}
-                                <div class="alert alert-danger">
+                                <div class="alert alert-danger rounded-3">
                                     {{ form.non_field_errors }}
                                 </div>
                             {% endif %}
 
+
                             <div class="row g-3">
 
+                                <!-- NAME -->
                                 <div class="col-md-6">
-                                    <label class="form-label">Full Name</label>
+                                    <label class="form-label">
+                                        Full Name
+                                    </label>
+
                                     {{ form.name }}
+
                                     {% for error in form.name.errors %}
-                                        <small class="text-danger">{{ error }}</small>
+                                        <small class="contact-field-error">
+                                            {{ error }}
+                                        </small>
                                     {% endfor %}
                                 </div>
 
+
+                                <!-- EMAIL -->
                                 <div class="col-md-6">
-                                    <label class="form-label">Email Address</label>
+                                    <label class="form-label">
+                                        Email Address
+                                    </label>
+
                                     {{ form.email }}
+
                                     {% for error in form.email.errors %}
-                                        <small class="text-danger">{{ error }}</small>
+                                        <small class="contact-field-error">
+                                            {{ error }}
+                                        </small>
                                     {% endfor %}
                                 </div>
 
+
+                                <!-- PHONE -->
                                 <div class="col-md-6">
-                                    <label class="form-label">Phone Number</label>
+                                    <label class="form-label">
+                                        Phone Number
+                                    </label>
+
                                     {{ form.phone }}
+
                                     {% for error in form.phone.errors %}
-                                        <small class="text-danger">{{ error }}</small>
+                                        <small class="contact-field-error">
+                                            {{ error }}
+                                        </small>
                                     {% endfor %}
                                 </div>
 
+
+                                <!-- SUBJECT -->
                                 <div class="col-md-6">
-                                    <label class="form-label">Subject</label>
+                                    <label class="form-label">
+                                        Subject
+                                    </label>
+
                                     {{ form.subject }}
+
                                     {% for error in form.subject.errors %}
-                                        <small class="text-danger">{{ error }}</small>
+                                        <small class="contact-field-error">
+                                            {{ error }}
+                                        </small>
                                     {% endfor %}
                                 </div>
 
+
+                                <!-- MESSAGE -->
                                 <div class="col-12">
-                                    <label class="form-label">Your Message</label>
+                                    <label class="form-label">
+                                        Your Message
+                                    </label>
+
                                     {{ form.message }}
+
                                     {% for error in form.message.errors %}
-                                        <small class="text-danger">{{ error }}</small>
+                                        <small class="contact-field-error">
+                                            {{ error }}
+                                        </small>
                                     {% endfor %}
                                 </div>
 
+
+                                <!-- SUBMIT -->
                                 <div class="col-12 mt-4">
-                                    <button type="submit" class="contact-submit-btn">
+
+                                    <button type="submit"
+                                            class="contact-submit-btn">
+
                                         Send Message
+
                                         <i class="bi bi-arrow-right"></i>
+
                                     </button>
+
+                                    <p class="contact-privacy-note">
+                                        <i class="bi bi-lock-fill"></i>
+                                        Your information is submitted securely.
+                                    </p>
+
                                 </div>
 
                             </div>
+
                         </form>
 
                     </div>

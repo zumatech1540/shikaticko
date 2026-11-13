@@ -1,72 +1,696 @@
 
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}About Us | EventHub{% endblock %}
 
 {% block content %}
 
-<section class="py-5" style="background: linear-gradient(135deg, #101828, #263b63); color: white;">
-    <div class="container text-center py-5">
-        <span class="badge bg-warning text-dark mb-3">ABOUT EVENTHUB</span>
-        <h1 class="display-4 fw-bold">Connecting People Through Experiences</h1>
-        <p class="lead mt-3">
-            Discover events, compete, connect and create unforgettable memories.
-        </p>
-    </div>
-</section>
+<style>
+    :root {
+        --eh-dark: #101828;
+        --eh-navy: #172b4d;
+        --eh-green: #198754;
+        --eh-light: #f5f8fc;
+        --eh-muted: #667085;
+    }
 
-<section class="py-5">
-    <div class="container">
-        <div class="row align-items-center g-5">
-            <div class="col-lg-6">
-                <h2 class="fw-bold mb-3">Who We Are</h2>
-                <p>
-                    EventHub is an event discovery and ticketing platform designed
-                    to connect event organizers with people looking for exciting
-                    experiences.
-                </p>
-                <p>
-                    From concerts and sports competitions to conferences,
-                    festivals and community events, we make it easier to discover
-                    events and book tickets online.
-                </p>
-            </div>
+    .about-page {
+        overflow: hidden;
+        color: #344054;
+    }
 
-            <div class="col-lg-6">
-                <div class="p-5 rounded-4 text-center"
-                     style="background: #f1f5f9;">
-                    <i class="bi bi-calendar-event display-1 text-success"></i>
-                    <h3 class="fw-bold mt-3">Every Event Matters</h3>
-                    <p class="text-muted mb-0">
-                        Bringing organizers and audiences together.
+    /* HERO */
+    .about-hero {
+        position: relative;
+        overflow: hidden;
+        padding: 110px 0 115px;
+        color: #fff;
+        background:
+            radial-gradient(circle at 85% 20%, rgba(25,135,84,.30), transparent 28%),
+            radial-gradient(circle at 10% 90%, rgba(59,130,246,.18), transparent 30%),
+            linear-gradient(125deg, #101828 0%, #172b4d 55%, #123d39 100%);
+    }
+
+    .about-hero::before,
+    .about-hero::after {
+        content: "";
+        position: absolute;
+        border: 1px solid rgba(255,255,255,.10);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .about-hero::before {
+        width: 420px;
+        height: 420px;
+        right: -120px;
+        top: -180px;
+    }
+
+    .about-hero::after {
+        width: 300px;
+        height: 300px;
+        left: -140px;
+        bottom: -170px;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 17px;
+        border: 1px solid rgba(255,255,255,.2);
+        border-radius: 50px;
+        background: rgba(255,255,255,.09);
+        color: #d1fae5;
+        font-size: .78rem;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+    }
+
+    .about-hero h1 {
+        max-width: 850px;
+        margin: 25px auto 18px;
+        font-size: clamp(2.5rem, 5vw, 4.4rem);
+        font-weight: 850;
+        line-height: 1.12;
+        letter-spacing: -2px;
+    }
+
+    .about-hero h1 span {
+        color: #6ee7a8;
+    }
+
+    .about-hero p {
+        max-width: 690px;
+        margin: auto;
+        color: #d0d5dd;
+        font-size: 1.12rem;
+        line-height: 1.8;
+    }
+
+    /* SECTION COMMON */
+    .about-section {
+        padding: 85px 0;
+    }
+
+    .section-tag {
+        display: inline-block;
+        margin-bottom: 13px;
+        color: var(--eh-green);
+        font-size: .76rem;
+        font-weight: 800;
+        letter-spacing: 1.7px;
+        text-transform: uppercase;
+    }
+
+    .section-heading {
+        color: var(--eh-dark);
+        font-size: clamp(1.9rem, 3vw, 2.7rem);
+        font-weight: 800;
+        letter-spacing: -1px;
+    }
+
+    .section-description {
+        color: var(--eh-muted);
+        font-size: 1.02rem;
+        line-height: 1.85;
+    }
+
+    /* WHO WE ARE */
+    .about-visual {
+        position: relative;
+        min-height: 390px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border-radius: 28px;
+        background:
+            radial-gradient(circle at 20% 20%, rgba(110,231,168,.25), transparent 35%),
+            linear-gradient(145deg, #e8f7ef, #e9f0fb);
+    }
+
+    .visual-main {
+        width: 190px;
+        height: 190px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 40px;
+        background: linear-gradient(145deg, #198754, #12633e);
+        color: white;
+        font-size: 5rem;
+        box-shadow: 0 25px 60px rgba(25,135,84,.25);
+        transform: rotate(-7deg);
+    }
+
+    .visual-floating {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 18px;
+        border-radius: 15px;
+        background: #fff;
+        color: #344054;
+        font-size: .88rem;
+        font-weight: 700;
+        box-shadow: 0 12px 35px rgba(16,24,40,.10);
+        animation: floatCard 4s ease-in-out infinite;
+    }
+
+    .visual-floating i {
+        color: var(--eh-green);
+        font-size: 1.3rem;
+    }
+
+    .floating-one {
+        top: 55px;
+        left: 25px;
+    }
+
+    .floating-two {
+        right: 20px;
+        bottom: 55px;
+        animation-delay: 1s;
+    }
+
+    @keyframes floatCard {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    /* MISSION / VISION */
+    .purpose-section {
+        background: var(--eh-light);
+    }
+
+    .purpose-card {
+        height: 100%;
+        padding: 35px;
+        border: 1px solid #edf0f4;
+        border-radius: 22px;
+        background: #fff;
+        box-shadow: 0 10px 35px rgba(16,24,40,.04);
+        transition: transform .3s ease, box-shadow .3s ease;
+    }
+
+    .purpose-card:hover {
+        transform: translateY(-7px);
+        box-shadow: 0 20px 45px rgba(16,24,40,.09);
+    }
+
+    .purpose-icon {
+        width: 62px;
+        height: 62px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 22px;
+        border-radius: 18px;
+        background: #e8f7ef;
+        color: var(--eh-green);
+        font-size: 1.8rem;
+    }
+
+    .purpose-card h3 {
+        margin-bottom: 13px;
+        color: var(--eh-dark);
+        font-size: 1.35rem;
+        font-weight: 800;
+    }
+
+    .purpose-card p {
+        margin: 0;
+        color: var(--eh-muted);
+        line-height: 1.8;
+    }
+
+    /* VALUES */
+    .value-card {
+        height: 100%;
+        padding: 28px 23px;
+        border: 1px solid #edf0f4;
+        border-radius: 18px;
+        background: #fff;
+        transition: all .3s ease;
+    }
+
+    .value-card:hover {
+        border-color: #b7e4ca;
+        transform: translateY(-5px);
+    }
+
+    .value-card i {
+        display: inline-flex;
+        margin-bottom: 17px;
+        color: var(--eh-green);
+        font-size: 2rem;
+    }
+
+    .value-card h5 {
+        color: var(--eh-dark);
+        font-weight: 800;
+    }
+
+    .value-card p {
+        margin-bottom: 0;
+        color: var(--eh-muted);
+        font-size: .94rem;
+        line-height: 1.7;
+    }
+
+    /* ORGANIZERS */
+    .organizer-section {
+        position: relative;
+        overflow: hidden;
+        padding: 75px 0;
+        color: #fff;
+        background: linear-gradient(120deg, #14233d, #173d35);
+    }
+
+    .organizer-section::after {
+        content: "";
+        position: absolute;
+        width: 350px;
+        height: 350px;
+        right: -150px;
+        top: -170px;
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 50%;
+    }
+
+    .organizer-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .organizer-section h2 {
+        font-size: clamp(1.9rem, 3vw, 2.6rem);
+        font-weight: 800;
+    }
+
+    .organizer-section p {
+        max-width: 650px;
+        color: #d0d5dd;
+        line-height: 1.8;
+    }
+
+    /* CTA */
+    .about-cta {
+        padding: 85px 0;
+        text-align: center;
+        background: #fff;
+    }
+
+    .about-cta-inner {
+        padding: 65px 25px;
+        border-radius: 28px;
+        background:
+            radial-gradient(circle at 90% 10%, rgba(110,231,168,.18), transparent 30%),
+            linear-gradient(120deg, #eaf7ef, #f0f5fc);
+    }
+
+    .about-cta h2 {
+        color: var(--eh-dark);
+        font-size: clamp(1.9rem, 3vw, 2.7rem);
+        font-weight: 850;
+    }
+
+    .about-cta p {
+        color: var(--eh-muted);
+        line-height: 1.8;
+    }
+
+    .btn-about-primary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        padding: 14px 27px;
+        border: 0;
+        border-radius: 50px;
+        background: var(--eh-green);
+        color: white;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all .25s ease;
+    }
+
+    .btn-about-primary:hover {
+        transform: translateY(-3px);
+        background: #146c43;
+        color: white;
+        box-shadow: 0 12px 25px rgba(25,135,84,.2);
+    }
+
+    .btn-about-outline {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        padding: 13px 25px;
+        border: 1px solid rgba(255,255,255,.5);
+        border-radius: 50px;
+        color: #fff;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all .25s ease;
+    }
+
+    .btn-about-outline:hover {
+        background: #fff;
+        color: var(--eh-dark);
+    }
+
+    @media(max-width: 767px) {
+        .about-hero {
+            padding: 80px 0 85px;
+        }
+
+        .about-hero h1 {
+            letter-spacing: -1px;
+        }
+
+        .about-section {
+            padding: 60px 0;
+        }
+
+        .about-visual {
+            min-height: 310px;
+        }
+
+        .visual-main {
+            width: 145px;
+            height: 145px;
+            font-size: 4rem;
+        }
+
+        .visual-floating {
+            padding: 10px 12px;
+            font-size: .75rem;
+        }
+
+        .floating-one {
+            top: 30px;
+            left: 12px;
+        }
+
+        .floating-two {
+            right: 10px;
+            bottom: 30px;
+        }
+
+        .purpose-card {
+            padding: 27px;
+        }
+
+        .about-cta {
+            padding: 55px 0;
+        }
+
+        .about-cta-inner {
+            padding: 45px 20px;
+        }
+    }
+
+    @media(prefers-reduced-motion: reduce) {
+        .visual-floating {
+            animation: none;
+        }
+
+        .purpose-card,
+        .value-card,
+        .btn-about-primary,
+        .btn-about-outline {
+            transition: none;
+        }
+    }
+</style>
+
+<div class="about-page">
+
+    <!-- HERO -->
+    <section class="about-hero">
+        <div class="container text-center hero-content">
+            <span class="hero-label">
+                <i class="bi bi-stars"></i>
+                ABOUT EVENTHUB
+            </span>
+
+            <h1>
+                Bringing People Together Through
+                <span>Unforgettable Experiences.</span>
+            </h1>
+
+            <p>
+                We believe every event creates an opportunity to connect,
+                celebrate, discover and make memories. EventHub makes it
+                easier to find experiences worth being part of.
+            </p>
+        </div>
+    </section>
+
+
+    <!-- WHO WE ARE -->
+    <section class="about-section">
+        <div class="container">
+            <div class="row align-items-center g-5">
+
+                <div class="col-lg-6">
+                    <span class="section-tag">Who We Are</span>
+
+                    <h2 class="section-heading mb-4">
+                        More Than Just an Event Ticketing Platform
+                    </h2>
+
+                    <p class="section-description">
+                        EventHub is an event discovery, ticketing and
+                        management platform built to bring event organizers
+                        and audiences closer together.
+                    </p>
+
+                    <p class="section-description">
+                        Whether you are looking for a live concert, sports
+                        competition, business conference, festival, workshop
+                        or community gathering, we help you discover
+                        opportunities to participate and connect.
+                    </p>
+
+                    <p class="section-description mb-0">
+                        We also empower organizers with tools to showcase
+                        their events, manage ticket sales and create
+                        memorable experiences for their audiences.
                     </p>
                 </div>
+
+                <div class="col-lg-6">
+                    <div class="about-visual">
+
+                        <div class="visual-floating floating-one">
+                            <i class="bi bi-ticket-perforated"></i>
+                            Easy Ticket Booking
+                        </div>
+
+                        <div class="visual-main">
+                            <i class="bi bi-calendar2-event"></i>
+                        </div>
+
+                        <div class="visual-floating floating-two">
+                            <i class="bi bi-people"></i>
+                            Bringing People Together
+                        </div>
+
+                    </div>
+                </div>
+
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<section class="py-5 bg-light">
-    <div class="container text-center">
-        <h2 class="fw-bold mb-4">Our Mission</h2>
-        <p class="lead mx-auto" style="max-width: 800px;">
-            To make event discovery, ticket booking and event management
-            simple, accessible and reliable for everyone.
-        </p>
-    </div>
-</section>
 
-<section class="py-5">
-    <div class="container text-center">
-        <h2 class="fw-bold">Ready for Your Next Experience?</h2>
-        <p class="text-muted">
-            Explore events and find something worth attending.
-        </p>
-        <a href="{% url 'core:competitions' %}"
-           class="btn btn-success btn-lg rounded-pill px-4">
-            Explore Events <i class="bi bi-arrow-right"></i>
-        </a>
-    </div>
-</section>
+    <!-- MISSION AND VISION -->
+    <section class="about-section purpose-section">
+        <div class="container">
+
+            <div class="text-center mb-5">
+                <span class="section-tag">Our Purpose</span>
+                <h2 class="section-heading">What Drives Us</h2>
+                <p class="section-description mx-auto" style="max-width:650px;">
+                    Everything we do is guided by our commitment to making
+                    events easier to discover, organize and experience.
+                </p>
+            </div>
+
+            <div class="row g-4">
+
+                <div class="col-md-6">
+                    <div class="purpose-card">
+                        <div class="purpose-icon">
+                            <i class="bi bi-bullseye"></i>
+                        </div>
+
+                        <h3>Our Mission</h3>
+
+                        <p>
+                            To make event discovery, ticket booking and
+                            event management simple, accessible and
+                            reliable for everyone while helping organizers
+                            reach and engage their audiences.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="purpose-card">
+                        <div class="purpose-icon">
+                            <i class="bi bi-eye"></i>
+                        </div>
+
+                        <h3>Our Vision</h3>
+
+                        <p>
+                            To become a trusted destination for discovering
+                            and experiencing events, connecting communities
+                            and creating opportunities through shared
+                            experiences.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+
+    <!-- OUR VALUES -->
+    <section class="about-section">
+        <div class="container">
+
+            <div class="text-center mb-5">
+                <span class="section-tag">What Matters to Us</span>
+                <h2 class="section-heading">Our Core Values</h2>
+                <p class="section-description mx-auto" style="max-width:650px;">
+                    The principles that shape how we serve event attendees
+                    and organizers.
+                </p>
+            </div>
+
+            <div class="row g-4">
+
+                <div class="col-sm-6 col-lg-3">
+                    <div class="value-card">
+                        <i class="bi bi-shield-check"></i>
+                        <h5>Trust & Reliability</h5>
+                        <p>
+                            We strive to provide a dependable platform
+                            for discovering events and booking tickets.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-sm-6 col-lg-3">
+                    <div class="value-card">
+                        <i class="bi bi-lightbulb"></i>
+                        <h5>Innovation</h5>
+                        <p>
+                            We embrace technology to make event experiences
+                            easier, smarter and more convenient.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-sm-6 col-lg-3">
+                    <div class="value-card">
+                        <i class="bi bi-people"></i>
+                        <h5>Community</h5>
+                        <p>
+                            We believe great events bring people together
+                            and strengthen connections.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-sm-6 col-lg-3">
+                    <div class="value-card">
+                        <i class="bi bi-heart"></i>
+                        <h5>Customer First</h5>
+                        <p>
+                            We put attendees and organizers at the centre
+                            of the experiences we create.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+
+    <!-- FOR EVENT ORGANIZERS -->
+    <section class="organizer-section">
+        <div class="container organizer-content">
+            <div class="row align-items-center g-4">
+
+                <div class="col-lg-8">
+                    <span class="section-tag" style="color:#6ee7a8;">
+                        For Event Organizers
+                    </span>
+
+                    <h2>Have an Event to Share With the World?</h2>
+
+                    <p class="mb-0">
+                        Whether you are hosting a concert, competition,
+                        conference or community event, EventHub gives you
+                        a platform to showcase your event and connect with
+                        people who want to attend.
+                    </p>
+                </div>
+
+                <div class="col-lg-4 text-lg-end">
+                    <a href="{% url 'organizers:register' %}"
+                       class="btn-about-outline">
+                        Become an Organizer
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+
+    <!-- FINAL CTA -->
+    <section class="about-cta">
+        <div class="container">
+            <div class="about-cta-inner">
+
+                <span class="section-tag">Your Next Experience Starts Here</span>
+
+                <h2>Life Happens at Events.</h2>
+
+                <p class="mx-auto mb-4" style="max-width:600px;">
+                    Discover exciting events, find your next adventure
+                    and be part of experiences that bring people together.
+                </p>
+
+                <a href="{% url 'events:event_list' %}"
+                   class="btn-about-primary">
+                    Explore Events
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+
+            </div>
+        </div>
+    </section>
+
+</div>
 
 {% endblock %}

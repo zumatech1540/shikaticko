@@ -1,35 +1,421 @@
 
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Explore Events | EventHub{% endblock %}
 
 {% block content %}
 
+<style>
+    :root {
+        --event-dark: #101828;
+        --event-navy: #172b4d;
+        --event-green: #198754;
+        --event-light: #f5f8fc;
+        --event-muted: #667085;
+    }
+
+    .competitions-page {
+        overflow: hidden;
+        color: #344054;
+        background: #fff;
+    }
+
+    /* HERO */
+    .competitions-hero {
+        position: relative;
+        overflow: hidden;
+        padding: 90px 0 125px;
+        color: #fff;
+        background:
+            radial-gradient(circle at 85% 20%, rgba(25,135,84,.30), transparent 28%),
+            radial-gradient(circle at 10% 90%, rgba(59,130,246,.16), transparent 30%),
+            linear-gradient(125deg, #101828, #172b4d 60%, #123d39);
+    }
+
+    .competitions-hero::before,
+    .competitions-hero::after {
+        content: "";
+        position: absolute;
+        border: 1px solid rgba(255,255,255,.10);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .competitions-hero::before {
+        width: 430px;
+        height: 430px;
+        right: -150px;
+        top: -200px;
+    }
+
+    .competitions-hero::after {
+        width: 280px;
+        height: 280px;
+        left: -140px;
+        bottom: -170px;
+    }
+
+    .competitions-hero .container {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+    }
+
+    .section-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 17px;
+        border: 1px solid rgba(255,255,255,.2);
+        border-radius: 50px;
+        background: rgba(255,255,255,.09);
+        color: #a7f3d0;
+        font-size: .75rem;
+        font-weight: 800;
+        letter-spacing: 1.6px;
+    }
+
+    .competitions-hero h1 {
+        margin: 24px 0 15px;
+        font-size: clamp(2.5rem, 5vw, 4.2rem);
+        font-weight: 850;
+        letter-spacing: -2px;
+    }
+
+    .competitions-hero h1 span {
+        color: #6ee7a8;
+    }
+
+    .competitions-hero p {
+        max-width: 700px;
+        margin: auto;
+        color: #d0d5dd;
+        font-size: 1.08rem;
+        line-height: 1.8;
+    }
+
+    /* SEARCH */
+    .event-search-wrapper {
+        position: relative;
+        z-index: 5;
+        margin-top: -43px;
+    }
+
+    .event-search-box {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 13px;
+        border: 1px solid #edf0f4;
+        border-radius: 20px;
+        background: #fff;
+        box-shadow: 0 18px 50px rgba(16,24,40,.12);
+    }
+
+    .search-input-group {
+        display: flex;
+        flex: 1;
+        align-items: center;
+        gap: 13px;
+        padding: 0 15px;
+    }
+
+    .search-input-group i {
+        color: var(--event-green);
+        font-size: 1.35rem;
+    }
+
+    .search-input-group input {
+        width: 100%;
+        min-width: 0;
+        padding: 13px 0;
+        border: 0;
+        outline: none;
+        color: var(--event-dark);
+        background: transparent;
+        font-size: .97rem;
+    }
+
+    .search-input-group input::placeholder {
+        color: #98a2b3;
+    }
+
+    .event-search-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 15px 25px;
+        border: 0;
+        border-radius: 13px;
+        background: var(--event-green);
+        color: #fff;
+        font-weight: 750;
+        transition: .25s ease;
+    }
+
+    .event-search-btn:hover {
+        background: #146c43;
+        transform: translateY(-2px);
+    }
+
+    /* CONTENT */
+    .competitions-content {
+        padding: 75px 0 85px;
+        background: #fff;
+    }
+
+    .events-page-heading {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .events-page-heading h2 {
+        margin-bottom: 8px;
+        color: var(--event-dark);
+        font-size: 2rem;
+        font-weight: 850;
+        letter-spacing: -.7px;
+    }
+
+    .events-page-heading p {
+        margin: 0;
+        color: var(--event-muted);
+    }
+
+    /* CATEGORY FILTERS */
+    .event-category-filters {
+        display: flex;
+        gap: 11px;
+        padding-bottom: 28px;
+        overflow-x: auto;
+        scrollbar-width: thin;
+    }
+
+    .event-filter-btn {
+        display: inline-flex;
+        flex-shrink: 0;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 19px;
+        border: 1px solid #e4e7ec;
+        border-radius: 50px;
+        background: #fff;
+        color: #475467;
+        font-size: .88rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all .25s ease;
+    }
+
+    .event-filter-btn:hover,
+    .event-filter-btn.active {
+        border-color: var(--event-green);
+        background: var(--event-green);
+        color: #fff;
+    }
+
+    /* EMPTY STATE */
+    .competitions-empty-state {
+        position: relative;
+        overflow: hidden;
+        padding: 75px 25px;
+        border: 1px dashed #cbd5e1;
+        border-radius: 25px;
+        background:
+            radial-gradient(circle at 90% 10%, rgba(25,135,84,.07), transparent 28%),
+            #f8fafc;
+        text-align: center;
+    }
+
+    .competitions-empty-icon {
+        width: 95px;
+        height: 95px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 25px;
+        border-radius: 28px;
+        background: #e8f7ef;
+        color: var(--event-green);
+        font-size: 2.8rem;
+    }
+
+    .competitions-empty-state h3 {
+        margin-bottom: 13px;
+        color: var(--event-dark);
+        font-size: 1.8rem;
+        font-weight: 850;
+    }
+
+    .competitions-empty-state p {
+        max-width: 650px;
+        margin: 0 auto 27px;
+        color: var(--event-muted);
+        line-height: 1.85;
+    }
+
+    .empty-state-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        padding: 13px 24px;
+        border-radius: 50px;
+        background: var(--event-green);
+        color: #fff;
+        font-weight: 750;
+        text-decoration: none;
+        transition: .25s ease;
+    }
+
+    .empty-state-btn:hover {
+        background: #146c43;
+        color: #fff;
+        transform: translateY(-3px);
+    }
+
+    /* ORGANIZER BANNER */
+    .competitions-organizer-banner {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 25px;
+        margin-top: 55px;
+        padding: 38px 42px;
+        overflow: hidden;
+        border-radius: 23px;
+        background:
+            radial-gradient(circle at 90% 10%, rgba(110,231,168,.16), transparent 30%),
+            linear-gradient(120deg, #14233d, #173d35);
+        color: #fff;
+    }
+
+    .competitions-organizer-banner h3 {
+        margin-bottom: 10px;
+        font-size: 1.45rem;
+        font-weight: 850;
+    }
+
+    .competitions-organizer-banner p {
+        max-width: 580px;
+        margin: 0;
+        color: #d0d5dd;
+        line-height: 1.7;
+    }
+
+    .organizer-banner-btn {
+        display: inline-flex;
+        flex-shrink: 0;
+        align-items: center;
+        gap: 9px;
+        padding: 14px 22px;
+        border-radius: 50px;
+        background: #fff;
+        color: var(--event-dark);
+        font-weight: 750;
+        text-decoration: none;
+        transition: .25s ease;
+    }
+
+    .organizer-banner-btn:hover {
+        transform: translateY(-3px);
+        background: #6ee7a8;
+        color: var(--event-dark);
+    }
+
+    @media(max-width: 767px) {
+        .competitions-hero {
+            padding: 75px 0 95px;
+        }
+
+        .competitions-hero h1 {
+            letter-spacing: -1px;
+        }
+
+        .event-search-wrapper {
+            margin-top: -35px;
+        }
+
+        .event-search-box {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 5px;
+            padding: 12px;
+            border-radius: 17px;
+        }
+
+        .search-input-group {
+            padding: 0 8px;
+        }
+
+        .event-search-btn {
+            width: 100%;
+        }
+
+        .competitions-content {
+            padding: 55px 0 65px;
+        }
+
+        .events-page-heading h2 {
+            font-size: 1.65rem;
+        }
+
+        .competitions-empty-state {
+            padding: 55px 20px;
+        }
+
+        .competitions-empty-state h3 {
+            font-size: 1.45rem;
+        }
+
+        .competitions-organizer-banner {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 30px 25px;
+        }
+
+        .organizer-banner-btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
 <div class="competitions-page">
 
-    <!-- PAGE HERO -->
+    <!-- HERO -->
     <section class="competitions-hero">
         <div class="container">
 
             <span class="section-eyebrow">
+                <i class="bi bi-stars"></i>
                 DISCOVER YOUR NEXT EXPERIENCE
             </span>
 
-            <h1>Explore Amazing Events</h1>
+            <h1>
+                Explore Amazing <span>Events.</span>
+            </h1>
 
             <p>
-                Discover concerts, sports competitions, conferences,
-                festivals and social events. Find your next experience
-                and book your tickets online.
+                From live concerts and sports competitions to conferences,
+                festivals and community gatherings — discover experiences
+                worth attending and book your tickets with ease.
             </p>
 
         </div>
     </section>
 
+
     <!-- SEARCH -->
     <div class="container event-search-wrapper">
 
-        <form method="GET" action="{% url 'core:competitions' %}"
+        <form method="GET"
+              action="{% url 'core:competitions' %}"
               class="event-search-box">
 
             <div class="search-input-group">
@@ -39,7 +425,8 @@
                     type="text"
                     name="q"
                     value="{{ request.GET.q|default:'' }}"
-                    placeholder="Search events, competitions or experiences..."
+                    placeholder="Search events, locations or experiences..."
+                    aria-label="Search events"
                 >
             </div>
 
@@ -52,49 +439,64 @@
 
     </div>
 
+
     <!-- EVENTS CONTENT -->
     <section class="competitions-content">
-
         <div class="container">
 
             <div class="events-page-heading">
-
                 <div>
-                    <h2>Find Your Next Event</h2>
-                    <p>Explore experiences worth attending.</p>
-                </div>
+                    <span class="section-eyebrow"
+                          style="background:#e8f7ef;color:#198754;border:0;">
+                        YOUR NEXT EXPERIENCE
+                    </span>
 
+                    <h2 class="mt-3">Find Your Next Event</h2>
+
+                    <p>
+                        Explore experiences, connect with people
+                        and make unforgettable memories.
+                    </p>
+                </div>
             </div>
+
 
             <!-- CATEGORY FILTERS -->
             <div class="event-category-filters">
 
                 <a href="{% url 'core:competitions' %}"
                    class="event-filter-btn active">
+                    <i class="bi bi-grid"></i>
                     All Events
                 </a>
 
                 <a href="#" class="event-filter-btn">
+                    <i class="bi bi-music-note-beamed"></i>
                     Music & Concerts
                 </a>
 
                 <a href="#" class="event-filter-btn">
+                    <i class="bi bi-trophy"></i>
                     Sports
                 </a>
 
                 <a href="#" class="event-filter-btn">
+                    <i class="bi bi-award"></i>
                     Competitions
                 </a>
 
                 <a href="#" class="event-filter-btn">
+                    <i class="bi bi-briefcase"></i>
                     Conferences
                 </a>
 
                 <a href="#" class="event-filter-btn">
+                    <i class="bi bi-people"></i>
                     Social Events
                 </a>
 
             </div>
+
 
             <!-- EMPTY STATE -->
             <div class="competitions-empty-state">
@@ -106,34 +508,40 @@
                 <h3>Exciting Events Coming Soon!</h3>
 
                 <p>
-                    We are preparing an amazing collection of events
-                    for you. Soon you will be able to discover events,
-                    compare ticket options and book your tickets
-                    conveniently online.
+                    We are getting ready to bring you an amazing collection
+                    of events and experiences. Check back soon to discover
+                    upcoming events, explore ticket options and book your
+                    place online.
                 </p>
 
                 <a href="{% url 'accounts:organizer_register' %}"
-                   class="btn">
+                   class="empty-state-btn">
                     <i class="bi bi-plus-circle"></i>
                     Publish Your Event
                 </a>
 
             </div>
 
+
             <!-- ORGANIZER BANNER -->
             <div class="competitions-organizer-banner">
 
                 <div>
-                    <h3>Are You an Event Organizer?</h3>
+                    <h3>
+                        <i class="bi bi-megaphone me-2"
+                           style="color:#6ee7a8;"></i>
+                        Are You an Event Organizer?
+                    </h3>
 
                     <p>
-                        Publish your event, sell tickets and manage
-                        attendees using our platform.
+                        Bring your event to life with EventHub. Showcase
+                        your event, reach more people, sell tickets and
+                        manage attendees from one platform.
                     </p>
                 </div>
 
                 <a href="{% url 'accounts:organizer_register' %}"
-                   class="btn">
+                   class="organizer-banner-btn">
                     Become an Organizer
                     <i class="bi bi-arrow-right"></i>
                 </a>
@@ -141,7 +549,6 @@
             </div>
 
         </div>
-
     </section>
 
 </div>
