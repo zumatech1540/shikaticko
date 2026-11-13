@@ -192,6 +192,7 @@ LOGIN_REDIRECT_URL = 'core:home'
 LOGOUT_REDIRECT_URL = 'core:home'
 
 
+
 # ==========================================
 # MPESA DARAJA CONFIGURATION
 # ==========================================
@@ -199,6 +200,7 @@ LOGOUT_REDIRECT_URL = 'core:home'
 # ------------------------------------------
 # ENVIRONMENT
 # ------------------------------------------
+
 MPESA_ENVIRONMENT = os.getenv(
     "MPESA_ENVIRONMENT",
     "sandbox"
@@ -211,8 +213,31 @@ if MPESA_ENVIRONMENT not in ("sandbox", "production"):
 
 
 # ------------------------------------------
+# DARAJA API ENDPOINTS
+# ------------------------------------------
+
+if MPESA_ENVIRONMENT == "production":
+    MPESA_BASE_URL = "https://api.safaricom.co.ke"
+else:
+    MPESA_BASE_URL = "https://sandbox.safaricom.co.ke"
+
+MPESA_OAUTH_URL = (
+    f"{MPESA_BASE_URL}/oauth/v1/generate"
+)
+
+MPESA_STK_PUSH_URL = (
+    f"{MPESA_BASE_URL}/mpesa/stkpush/v1/processrequest"
+)
+
+MPESA_STK_QUERY_URL = (
+    f"{MPESA_BASE_URL}/mpesa/stkpushquery/v1/query"
+)
+
+
+# ------------------------------------------
 # DARAJA API CREDENTIALS
 # ------------------------------------------
+
 MPESA_CONSUMER_KEY = os.getenv(
     "MPESA_CONSUMER_KEY",
     ""
@@ -228,16 +253,18 @@ MPESA_CONSUMER_SECRET = os.getenv(
 # BUSINESS CONFIGURATION
 # ------------------------------------------
 
-# Safaricom-provisioned Store / Head Office shortcode.
-# Sandbox default is the standard test shortcode.
+# Safaricom-approved production shortcode:
+# 9464620
+
 MPESA_SHORTCODE = os.getenv(
     "MPESA_SHORTCODE",
-    "174379" if MPESA_ENVIRONMENT == "sandbox" else ""
+    "174379" if MPESA_ENVIRONMENT == "sandbox" else "9464620"
 ).strip()
 
 
-# Actual Buy Goods Till number.
-# Required when using CustomerBuyGoodsOnline.
+# Actual registered Buy Goods Till number.
+# This is not automatically the same as the shortcode.
+
 MPESA_TILL_NUMBER = os.getenv(
     "MPESA_TILL_NUMBER",
     ""
@@ -247,11 +274,6 @@ MPESA_TILL_NUMBER = os.getenv(
 # ------------------------------------------
 # TRANSACTION TYPE
 # ------------------------------------------
-# Sandbox default: PayBill testing.
-# Production default: Buy Goods.
-#
-# Override through .env when your Daraja account
-# has the appropriate transaction configuration.
 
 MPESA_TRANSACTION_TYPE = os.getenv(
     "MPESA_TRANSACTION_TYPE",
@@ -266,6 +288,7 @@ MPESA_TRANSACTION_TYPE = os.getenv(
 # ------------------------------------------
 # STK PUSH PASSKEY
 # ------------------------------------------
+
 MPESA_PASSKEY = os.getenv(
     "MPESA_PASSKEY",
     ""
@@ -275,6 +298,7 @@ MPESA_PASSKEY = os.getenv(
 # ------------------------------------------
 # CALLBACK URL
 # ------------------------------------------
+
 MPESA_CALLBACK_URL = os.getenv(
     "MPESA_CALLBACK_URL",
     ""
@@ -284,6 +308,7 @@ MPESA_CALLBACK_URL = os.getenv(
 # ------------------------------------------
 # REQUEST TIMEOUTS
 # ------------------------------------------
+
 MPESA_CONNECT_TIMEOUT = 15
 MPESA_READ_TIMEOUT = 45
 
@@ -291,6 +316,7 @@ MPESA_READ_TIMEOUT = 45
 # ------------------------------------------
 # VALIDATION
 # ------------------------------------------
+
 if MPESA_TRANSACTION_TYPE not in (
     "CustomerPayBillOnline",
     "CustomerBuyGoodsOnline"
@@ -299,10 +325,33 @@ if MPESA_TRANSACTION_TYPE not in (
         "Invalid MPESA_TRANSACTION_TYPE."
     )
 
-if (
-    MPESA_TRANSACTION_TYPE == "CustomerBuyGoodsOnline"
-    and not MPESA_TILL_NUMBER
-):
-    raise ValueError(
-        "MPESA_TILL_NUMBER is required for Buy Goods."
-    )
+
+if MPESA_TRANSACTION_TYPE == "CustomerBuyGoodsOnline":
+
+    if not MPESA_TILL_NUMBER:
+        raise ValueError(
+            "MPESA_TILL_NUMBER is required for Buy Goods."
+        )
+
+
+if MPESA_ENVIRONMENT == "production":
+
+    if not MPESA_CONSUMER_KEY:
+        raise ValueError(
+            "Production M-Pesa Consumer Key is missing."
+        )
+
+    if not MPESA_CONSUMER_SECRET:
+        raise ValueError(
+            "Production M-Pesa Consumer Secret is missing."
+        )
+
+    if not MPESA_PASSKEY:
+        raise ValueError(
+            "Production M-Pesa Passkey is missing."
+        )
+
+    if not MPESA_CALLBACK_URL.startswith("https://"):
+        raise ValueError(
+            "Production M-Pesa callback must use HTTPS."
+        )

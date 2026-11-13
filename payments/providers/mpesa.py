@@ -1,4 +1,6 @@
+
 import base64
+import logging
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
 from zoneinfo import ZoneInfo
@@ -8,17 +10,26 @@ import requests
 from django.conf import settings
 
 
+logger = logging.getLogger(__name__)
+
+
 class MpesaError(Exception):
     """Raised when a Daraja API request fails."""
     pass
 
 
+# ==========================================================
+# 1. ENVIRONMENT AND API URLS
+# ==========================================================
+
 def get_mpesa_base_url():
-    environment = getattr(
-        settings,
-        "MPESA_ENVIRONMENT",
-        "sandbox"
-    ).lower()
+    """
+    Return the correct Safaricom API base URL.
+    """
+
+    environment = str(
+        getattr(settings, "MPESA_ENVIRONMENT", "sandbox")
+    ).strip().lower()
 
     if environment == "sandbox":
         return "https://sandbox.safaricom.co.ke"
@@ -27,27 +38,30 @@ def get_mpesa_base_url():
         return "https://api.safaricom.co.ke"
 
     raise MpesaError(
-        "Invalid M-Pesa environment configuration."
+        "Invalid M-Pesa environment. "
+        "Use sandbox or production."
     )
 
 
 def get_access_token():
     """
-    Authenticate ShikaTicko with Safaricom Daraja.
+    Authenticate ShikaTicko with Safaricom Daraja OAuth.
     """
 
-    consumer_key = settings.MPESA_CONSUMER_KEY
-    consumer_secret = settings.MPESA_CONSUMER_SECRET
+    consumer_key = str(
+        getattr(settings, "MPESA_CONSUMER_KEY", "")
+    ).strip()
+
+    consumer_secret = str(
+        getattr(settings, "MPESA_CONSUMER_SECRET", "")
+    ).strip()
 
     if not consumer_key or not consumer_secret:
         raise MpesaError(
             "M-Pesa Consumer Key or Consumer Secret is missing."
         )
 
-    url = (
-        f"{get_mpesa_base_url()}"
-        "/oauth/v1/generate"
-    )
+    url = f"{get_mpesa_base_url()}/oauth/v1/generate"
 
     try:
         response = requests.get(
@@ -59,35 +73,59 @@ def get_access_token():
                 consumer_key,
                 consumer_secret
             ),
-            timeout=30
+            timeout=(15, 30)
         )
 
-        response.raise_for_status()
-        data = response.json()
+        try:
+            data = response.json()
+        except ValueError:
+            raise MpesaError(
+                "Safaricom returned an invalid OAuth response."
+            )
+
+        if not response.ok:
+            message = data.get(
+                "errorMessage",
+                "Safaricom OAuth authentication failed."
+            )
+
+            raise MpesaError(
+                f"Daraja OAuth error "
+                f"({response.status_code}): {message}"
+            )
+
+    except requests.Timeout:
+        raise MpesaError(
+            "Connection to Safaricom OAuth timed out."
+        )
+
+    except requests.ConnectionError:
+        raise MpesaError(
+            "Could not connect to Safaricom OAuth."
+        )
 
     except requests.RequestException as error:
         raise MpesaError(
-            f"Could not authenticate with Daraja: {error}"
-        )
-
-    except ValueError:
-        raise MpesaError(
-            "Daraja returned an invalid authentication response."
+            f"OAuth request failed: {error}"
         )
 
     access_token = data.get("access_token")
 
     if not access_token:
         raise MpesaError(
-            "Daraja did not return an access token."
+            "Safaricom did not return an access token."
         )
 
     return access_token
 
 
+# ==========================================================
+# 2. PHONE NUMBER NORMALIZATION
+# ==========================================================
+
 def normalize_mpesa_phone(phone):
     """
-    Convert Kenyan phone numbers into 254XXXXXXXXX format.
+    Convert Kenyan phone numbers to 254XXXXXXXXX.
     """
 
     phone = str(phone).strip()
@@ -118,25 +156,45 @@ def normalize_mpesa_phone(phone):
     return phone
 
 
-def generate_password():
+# ==========================================================
+# 3. PRODUCTION SHORTCODE AND PASSWORD
+# ==========================================================
+
+def get_mpesa_credentials():
     """
-    Generate the Lipa Na M-Pesa Online password.
-    Uses the Store / Head Office shortcode associated
-    with the Daraja passkey.
+    Read the configured shortcode and passkey.
     """
 
     shortcode = str(
         getattr(settings, "MPESA_SHORTCODE", "")
     ).strip()
 
-    passkey = getattr(
-        settings, "MPESA_PASSKEY", ""
-    )
+    passkey = str(
+        getattr(settings, "MPESA_PASSKEY", "")
+    ).strip()
 
-    if not shortcode or not passkey:
+    if not shortcode or not shortcode.isdigit():
         raise MpesaError(
-            "M-Pesa Shortcode or Passkey is missing."
+            "A valid M-Pesa Business Shortcode is required."
         )
+
+    if not passkey:
+        raise MpesaError(
+            "M-Pesa Passkey is missing."
+        )
+
+    return shortcode, passkey
+
+
+def generate_password():
+    """
+    Generate the Lipa Na M-Pesa Online password.
+
+    Uses the Safaricom-issued Business Shortcode,
+    production passkey and Nairobi timestamp.
+    """
+
+    shortcode, passkey = get_mpesa_credentials()
 
     timestamp = datetime.now(
         ZoneInfo("Africa/Nairobi")
@@ -153,6 +211,78 @@ def generate_password():
     return password, timestamp
 
 
+# ==========================================================
+# 4. COMMON DAR AJA RESPONSE HANDLING
+# ==========================================================
+
+def _send_daraja_request(url, payload, access_token):
+    """
+    Send an authenticated JSON POST request to Daraja.
+    """
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+
+    try:
+        response = requests.post(
+            url,
+            json=payload,
+            headers=headers,
+            timeout=(15, 45)
+        )
+
+        try:
+            data = response.json()
+        except ValueError:
+            raise MpesaError(
+                "Safaricom returned an invalid response."
+            )
+
+        if not response.ok:
+            error_code = data.get(
+                "errorCode",
+                response.status_code
+            )
+
+            error_message = data.get(
+                "errorMessage",
+                data.get(
+                    "ResponseDescription",
+                    "Safaricom rejected the request."
+                )
+            )
+
+            raise MpesaError(
+                f"Daraja error ({error_code}): "
+                f"{error_message}"
+            )
+
+        return data
+
+    except requests.Timeout:
+        raise MpesaError(
+            "Safaricom request timed out. "
+            "Check payment status before retrying."
+        )
+
+    except requests.ConnectionError:
+        raise MpesaError(
+            "Could not connect to Safaricom. "
+            "Please try again later."
+        )
+
+    except requests.RequestException as error:
+        raise MpesaError(
+            f"Daraja request failed: {error}"
+        )
+
+
+# ==========================================================
+# 5. INITIATE STK PUSH
+# ==========================================================
 
 def initiate_stk_push(
     phone,
@@ -164,34 +294,28 @@ def initiate_stk_push(
     Initiate an M-Pesa STK Push.
 
     Supports:
-        1. CustomerPayBillOnline
-        2. CustomerBuyGoodsOnline
+        CustomerPayBillOnline
+        CustomerBuyGoodsOnline
 
-    Sandbox testing normally uses the provisioned PayBill
-    test configuration.
+    Production Buy Goods configuration:
+        BusinessShortCode = Safaricom-issued shortcode
+        PartyB = registered Buy Goods Till number
 
-    Production Buy Goods requires the correct Safaricom-
-    provisioned Store/Head Office shortcode, Till number,
-    credentials and transaction permissions.
-
-    A successful response means Safaricom accepted the
-    STK request, not that payment has been completed.
+    IMPORTANT:
+        A successful STK response means the request was
+        accepted, not that the customer has paid.
     """
 
-    # --------------------------------------------------
-    # 1. NORMALIZE PHONE NUMBER
-    # --------------------------------------------------
+    # ------------------------------------------------------
+    # NORMALIZE PHONE
+    # ------------------------------------------------------
+
     phone = normalize_mpesa_phone(phone)
 
-    if not phone or not phone.isdigit() or len(phone) != 12:
-        raise MpesaError(
-            "Invalid M-Pesa phone number. "
-            "Use a valid Kenyan mobile number."
-        )
+    # ------------------------------------------------------
+    # VALIDATE AMOUNT
+    # ------------------------------------------------------
 
-    # --------------------------------------------------
-    # 2. VALIDATE PAYMENT AMOUNT
-    # --------------------------------------------------
     try:
         decimal_amount = Decimal(str(amount))
 
@@ -212,16 +336,15 @@ def initiate_stk_push(
 
     amount = int(decimal_amount)
 
-    # --------------------------------------------------
-    # 3. LOAD MPESA CONFIGURATION
-    # --------------------------------------------------
+    # ------------------------------------------------------
+    # LOAD CONFIGURATION
+    # ------------------------------------------------------
+
     environment = str(
         getattr(settings, "MPESA_ENVIRONMENT", "sandbox")
     ).strip().lower()
 
-    shortcode = str(
-        getattr(settings, "MPESA_SHORTCODE", "")
-    ).strip()
+    shortcode, passkey = get_mpesa_credentials()
 
     till_number = str(
         getattr(settings, "MPESA_TILL_NUMBER", "")
@@ -235,26 +358,17 @@ def initiate_stk_push(
         getattr(
             settings,
             "MPESA_TRANSACTION_TYPE",
-            "CustomerPayBillOnline"
+            "CustomerBuyGoodsOnline"
         )
     ).strip()
 
-    passkey = str(
-        getattr(settings, "MPESA_PASSKEY", "")
-    ).strip()
+    # ------------------------------------------------------
+    # VALIDATE CONFIGURATION
+    # ------------------------------------------------------
 
-    # --------------------------------------------------
-    # 4. VALIDATE CONFIGURATION
-    # --------------------------------------------------
     if environment not in ("sandbox", "production"):
         raise MpesaError(
-            "Invalid MPESA_ENVIRONMENT. "
-            "Use sandbox or production."
-        )
-
-    if not shortcode or not shortcode.isdigit():
-        raise MpesaError(
-            "A valid M-Pesa Business Shortcode is required."
+            "MPESA_ENVIRONMENT must be sandbox or production."
         )
 
     if transaction_type not in (
@@ -266,70 +380,47 @@ def initiate_stk_push(
         )
 
     if transaction_type == "CustomerBuyGoodsOnline":
+
         if not till_number or not till_number.isdigit():
             raise MpesaError(
-                "A valid M-Pesa Buy Goods Till number is required."
+                "A valid registered Buy Goods Till number "
+                "is required."
             )
 
         party_b = till_number
 
     else:
-        # PayBill transactions use the configured shortcode.
         party_b = shortcode
 
     if not callback_url.startswith("https://"):
         raise MpesaError(
-            "The M-Pesa callback URL must use HTTPS."
+            "M-Pesa callback URL must use HTTPS."
         )
 
-    if not passkey:
-        raise MpesaError(
-            "M-Pesa Passkey is missing."
-        )
+    # ------------------------------------------------------
+    # AUTHENTICATE
+    # ------------------------------------------------------
 
-    # --------------------------------------------------
-    # 5. AUTHENTICATE WITH SAFARICOM
-    # --------------------------------------------------
-    try:
-        access_token = get_access_token()
+    access_token = get_access_token()
 
-    except MpesaError:
-        raise
+    # ------------------------------------------------------
+    # GENERATE PASSWORD
+    # ------------------------------------------------------
 
-    except requests.RequestException as error:
-        raise MpesaError(
-            f"Could not authenticate with Daraja: {error}"
-        )
+    password, timestamp = generate_password()
 
-    if not access_token:
-        raise MpesaError(
-            "Safaricom did not return a valid access token."
-        )
-
-    # --------------------------------------------------
-    # 6. GENERATE STK PASSWORD
-    # --------------------------------------------------
-    try:
-        password, timestamp = generate_password()
-
-    except Exception as error:
-        raise MpesaError(
-            f"Could not generate M-Pesa password: {error}"
-        )
-
-    # --------------------------------------------------
-    # 7. BUILD STK PUSH REQUEST
-    # --------------------------------------------------
-    base_url = get_mpesa_base_url().rstrip("/")
+    # ------------------------------------------------------
+    # STK PUSH ENDPOINT
+    # ------------------------------------------------------
 
     url = (
-        f"{base_url}/mpesa/stkpush/v1/processrequest"
+        f"{get_mpesa_base_url()}"
+        "/mpesa/stkpush/v1/processrequest"
     )
 
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "Content-Type": "application/json",
-    }
+    # ------------------------------------------------------
+    # STK PUSH PAYLOAD
+    # ------------------------------------------------------
 
     payload = {
         "BusinessShortCode": shortcode,
@@ -345,77 +436,95 @@ def initiate_stk_push(
         "TransactionDesc": str(transaction_description)[:13],
     }
 
-    # --------------------------------------------------
-    # 8. SEND STK PUSH REQUEST
-    # --------------------------------------------------
-    try:
-        response = requests.post(
-            url,
-            json=payload,
-            headers=headers,
-            timeout=(15, 45)
-        )
+    # ------------------------------------------------------
+    # SEND REQUEST
+    # ------------------------------------------------------
 
-        try:
-            result = response.json()
+    result = _send_daraja_request(
+        url,
+        payload,
+        access_token
+    )
 
-        except ValueError:
-            raise MpesaError(
-                "Safaricom returned an invalid STK Push response."
-            )
+    # ------------------------------------------------------
+    # VALIDATE RESPONSE
+    # ------------------------------------------------------
 
-        if not response.ok:
-            error_code = result.get(
-                "errorCode",
-                str(response.status_code)
-            )
-
-            error_message = result.get(
-                "errorMessage",
-                result.get(
-                    "ResponseDescription",
-                    "Safaricom rejected the STK Push request."
-                )
-            )
-
-            raise MpesaError(
-                f"Safaricom STK Push failed "
-                f"({error_code}): {error_message}"
-            )
-
-    except requests.Timeout:
-        raise MpesaError(
-            "The STK Push request timed out. "
-            "Check the payment status before retrying "
-            "to avoid duplicate payment prompts."
-        )
-
-    except requests.ConnectionError:
-        raise MpesaError(
-            "Could not connect to Safaricom STK Push. "
-            "Please try again later."
-        )
-
-    except requests.RequestException as error:
-        raise MpesaError(
-            f"Could not send STK Push request: {error}"
-        )
-
-    # --------------------------------------------------
-    # 9. VALIDATE SAFARICOM RESPONSE
-    # --------------------------------------------------
-    if result.get("ResponseCode") != "0":
+    if str(result.get("ResponseCode")) != "0":
         raise MpesaError(
             result.get(
-                "errorMessage",
+                "ResponseDescription",
                 result.get(
-                    "ResponseDescription",
-                    "Safaricom did not accept the STK Push request."
+                    "errorMessage",
+                    "Safaricom did not accept the STK Push."
                 )
             )
         )
 
-    # --------------------------------------------------
-    # 10. RETURN SUCCESSFUL INITIATION RESPONSE
-    # --------------------------------------------------
+    logger.info(
+        "STK Push accepted. Account reference: %s",
+        account_reference
+    )
+
+    # Return the complete response for payment processing.
+    return result
+
+
+# ==========================================================
+# 6. QUERY STK PUSH PAYMENT STATUS
+# ==========================================================
+
+def query_stk_push(checkout_request_id):
+    """
+    Query the status of an STK Push transaction.
+
+    checkout_request_id:
+        CheckoutRequestID returned by initiate_stk_push().
+
+    The returned ResultCode must be interpreted by the
+    payment processing code. Do not mark an order paid
+    merely because the query request was accepted.
+    """
+
+    checkout_request_id = str(
+        checkout_request_id
+    ).strip()
+
+    if not checkout_request_id:
+        raise MpesaError(
+            "CheckoutRequestID is required."
+        )
+
+    shortcode, passkey = get_mpesa_credentials()
+
+    access_token = get_access_token()
+
+    password, timestamp = generate_password()
+
+    url = (
+        f"{get_mpesa_base_url()}"
+        "/mpesa/stkpushquery/v1/query"
+    )
+
+    payload = {
+        "BusinessShortCode": shortcode,
+        "Password": password,
+        "Timestamp": timestamp,
+        "CheckoutRequestID": checkout_request_id,
+    }
+
+    result = _send_daraja_request(
+        url,
+        payload,
+        access_token
+    )
+
+    if str(result.get("ResponseCode")) != "0":
+        raise MpesaError(
+            result.get(
+                "ResponseDescription",
+                "Safaricom could not process the payment query."
+            )
+        )
+
     return result
