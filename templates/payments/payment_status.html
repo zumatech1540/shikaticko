@@ -1,193 +1,656 @@
+
 {% extends 'base.html' %}
 
 {% block title %}Payment Status | ShikaTicko{% endblock %}
 
+{% block extra_css %}
+<style>
+    .payment-page {
+        background: #f4f7fb;
+        min-height: 75vh;
+        padding: 55px 0 75px;
+    }
+
+    .payment-wrapper {
+        max-width: 760px;
+        margin: auto;
+    }
+
+    .payment-card {
+        background: #fff;
+        border: 1px solid #e9edf3;
+        border-radius: 22px;
+        overflow: hidden;
+        box-shadow: 0 15px 45px rgba(16, 24, 40, .07);
+    }
+
+    .payment-header {
+        padding: 42px 30px 35px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .payment-header.success {
+        background: linear-gradient(135deg, #e8f8ef, #f5fcf7);
+    }
+
+    .payment-header.pending {
+        background: linear-gradient(135deg, #fff7df, #fffcf1);
+    }
+
+    .payment-header.failed {
+        background: linear-gradient(135deg, #fff0f0, #fff8f8);
+    }
+
+    .payment-header.received {
+        background: linear-gradient(135deg, #eaf3ff, #f7faff);
+    }
+
+    .status-icon {
+        width: 100px;
+        height: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        border-radius: 50%;
+        font-size: 48px;
+    }
+
+    .success .status-icon {
+        background: #d1f4df;
+        color: #198754;
+    }
+
+    .pending .status-icon {
+        background: #fff0bf;
+        color: #d69e00;
+    }
+
+    .failed .status-icon {
+        background: #ffe0e0;
+        color: #dc3545;
+    }
+
+    .received .status-icon {
+        background: #dceaff;
+        color: #2563eb;
+    }
+
+    .payment-header h2 {
+        font-size: clamp(1.55rem, 4vw, 2rem);
+        font-weight: 800;
+        color: #101828;
+        margin-bottom: 10px;
+    }
+
+    .payment-header p {
+        max-width: 480px;
+        margin: auto;
+        color: #667085;
+        line-height: 1.7;
+    }
+
+    .status-label {
+        display: inline-block;
+        padding: 7px 15px;
+        border-radius: 30px;
+        font-size: .78rem;
+        font-weight: 800;
+        letter-spacing: .7px;
+        margin-bottom: 17px;
+    }
+
+    .success .status-label {
+        color: #146c43;
+        background: #d1f4df;
+    }
+
+    .pending .status-label {
+        color: #946200;
+        background: #fff0bf;
+    }
+
+    .failed .status-label {
+        color: #b42318;
+        background: #ffe0e0;
+    }
+
+    .received .status-label {
+        color: #175cd3;
+        background: #dceaff;
+    }
+
+    .payment-body {
+        padding: 32px;
+    }
+
+    .order-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 23px;
+    }
+
+    .order-heading h5 {
+        color: #101828;
+        font-weight: 800;
+        margin: 0;
+    }
+
+    .order-reference {
+        background: #f2f4f7;
+        color: #475467;
+        border-radius: 7px;
+        padding: 7px 10px;
+        font-size: .78rem;
+        font-weight: 700;
+        overflow-wrap: anywhere;
+    }
+
+    .order-info {
+        background: #f8fafc;
+        border: 1px solid #edf0f5;
+        border-radius: 13px;
+        padding: 20px;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        padding: 11px 0;
+        border-bottom: 1px solid #eaecf0;
+        font-size: .91rem;
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        color: #667085;
+        flex-shrink: 0;
+    }
+
+    .info-value {
+        color: #101828;
+        font-weight: 650;
+        text-align: right;
+        overflow-wrap: anywhere;
+    }
+
+    .amount-box {
+        margin-top: 20px;
+        background: #101828;
+        color: #fff;
+        border-radius: 14px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+    }
+
+    .amount-box span {
+        color: #d0d5dd;
+        font-size: .9rem;
+    }
+
+    .amount-box h3 {
+        margin: 0;
+        color: #8ce0ae;
+        font-weight: 800;
+        font-size: 1.6rem;
+    }
+
+    .receipt-box {
+        background: #eaf8ef;
+        border: 1px solid #c8ead4;
+        border-radius: 11px;
+        padding: 15px;
+        margin-top: 18px;
+    }
+
+    .receipt-box strong {
+        color: #146c43;
+        overflow-wrap: anywhere;
+    }
+
+    .payment-error {
+        background: #fff1f1;
+        border: 1px solid #ffd5d5;
+        color: #b42318;
+        border-radius: 11px;
+        padding: 15px;
+        margin-top: 18px;
+        font-size: .9rem;
+    }
+
+    .payment-instructions {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 17px;
+        margin-top: 20px;
+        color: #475467;
+        font-size: .9rem;
+        line-height: 1.7;
+    }
+
+    .payment-actions {
+        text-align: center;
+        margin-top: 28px;
+    }
+
+    .payment-actions .btn {
+        border-radius: 10px;
+        padding: 13px 25px;
+        font-weight: 700;
+        margin: 5px;
+    }
+
+    .btn-payment-success {
+        background: #198754;
+        color: #fff;
+    }
+
+    .btn-payment-success:hover {
+        background: #146c43;
+        color: #fff;
+    }
+
+    .secure-note {
+        text-align: center;
+        color: #98a2b3;
+        font-size: .8rem;
+        margin-top: 23px;
+    }
+
+    .secure-note i {
+        color: #198754;
+    }
+
+    @media(max-width: 575px) {
+        .payment-page {
+            padding: 25px 12px 45px;
+        }
+
+        .payment-header {
+            padding: 35px 18px;
+        }
+
+        .payment-body {
+            padding: 22px 17px;
+        }
+
+        .status-icon {
+            width: 82px;
+            height: 82px;
+            font-size: 39px;
+        }
+
+        .info-row {
+            font-size: .83rem;
+        }
+
+        .amount-box h3 {
+            font-size: 1.3rem;
+        }
+
+        .order-heading {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .payment-actions .btn {
+            width: 100%;
+            margin: 5px 0;
+        }
+    }
+</style>
+{% endblock %}
+
+
 {% block content %}
 
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-7">
+<div class="payment-page">
 
-            <div class="card border-0 shadow rounded-4 overflow-hidden">
+    <div class="container">
 
-                <div class="card-body p-4 p-md-5 text-center">
+        <div class="payment-wrapper">
 
-                    <div class="mb-4">
+            <div class="payment-card">
 
-                        {% if order.status == 'paid' %}
+                <!-- PAYMENT STATUS HEADER -->
 
-                            <div class="text-success">
-                                <i class="bi bi-check-circle-fill"
-                                   style="font-size: 65px;"></i>
-                            </div>
+                {% if order.status == 'paid' %}
 
-                            <h2 class="fw-bold mt-3">
-                                Payment Successful!
-                            </h2>
+                    <div class="payment-header success">
 
-                            <p class="text-muted">
-                                Your payment has been confirmed.
-                                Your tickets are being sent to your email.
-                            </p>
+                        <span class="status-label">
+                            PAYMENT CONFIRMED
+                        </span>
 
-                        {% elif latest_payment and latest_payment.status == 'success' %}
+                        <div class="status-icon">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </div>
 
-                            <div class="text-warning">
-                                <i class="bi bi-hourglass-split"
-                                   style="font-size: 65px;"></i>
-                            </div>
+                        <h2>Payment Successful!</h2>
 
-                            <h2 class="fw-bold mt-3">
-                                Payment Received
-                            </h2>
-
-                            <p class="text-muted">
-                                Your payment has been received.
-                                Ticket processing requires attention.
-                                Please contact ShikaTicko support if
-                                your tickets do not arrive.
-                            </p>
-
-                        {% elif latest_payment and latest_payment.status == 'failed' %}
-
-                            <div class="text-danger">
-                                <i class="bi bi-x-circle-fill"
-                                   style="font-size: 65px;"></i>
-                            </div>
-
-                            <h2 class="fw-bold mt-3">
-                                Payment Not Completed
-                            </h2>
-
-                            <p class="text-muted">
-                                {{ latest_payment.result_description }}
-                            </p>
-
-                        {% else %}
-
-                            <div class="text-warning">
-                                <i class="bi bi-phone"
-                                   style="font-size: 65px;"></i>
-                            </div>
-
-                            <h2 class="fw-bold mt-3">
-                                Waiting for M-Pesa Payment
-                            </h2>
-
-                            <p class="text-muted">
-                                Check your phone for the M-Pesa prompt.
-                                Enter your M-Pesa PIN on your phone
-                                to complete the payment.
-                            </p>
-
-                        {% endif %}
+                        <p>
+                            Your payment has been confirmed.
+                            Your ShikaTicko tickets are ready for processing.
+                        </p>
 
                     </div>
 
-                    <hr>
+                {% elif latest_payment and latest_payment.status == 'success' %}
 
-                    <div class="text-start">
+                    <div class="payment-header received">
 
-                        <h5 class="fw-bold mb-3">
+                        <span class="status-label">
+                            PAYMENT RECEIVED
+                        </span>
+
+                        <div class="status-icon">
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
+
+                        <h2>Payment Received</h2>
+
+                        <p>
+                            Your payment was successful, but your order
+                            has not yet completed ticket processing.
+                            Please contact support if your tickets do not arrive.
+                        </p>
+
+                    </div>
+
+                {% elif latest_payment and latest_payment.status == 'failed' %}
+
+                    <div class="payment-header failed">
+
+                        <span class="status-label">
+                            PAYMENT FAILED
+                        </span>
+
+                        <div class="status-icon">
+                            <i class="bi bi-x-circle-fill"></i>
+                        </div>
+
+                        <h2>Payment Not Completed</h2>
+
+                        <p>
+                            We could not complete your payment.
+                            You can try making the payment again.
+                        </p>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="payment-header pending">
+
+                        <span class="status-label">
+                            AWAITING PAYMENT
+                        </span>
+
+                        <div class="status-icon">
+                            <i class="bi bi-phone"></i>
+                        </div>
+
+                        <h2>Waiting for M-Pesa Payment</h2>
+
+                        <p>
+                            Check your phone for the M-Pesa payment prompt.
+                            Enter your M-Pesa PIN to complete the transaction.
+                        </p>
+
+                    </div>
+
+                {% endif %}
+
+
+                <!-- ORDER DETAILS -->
+
+                <div class="payment-body">
+
+                    <div class="order-heading">
+
+                        <h5>
+                            <i class="bi bi-receipt me-2 text-success"></i>
                             Order Summary
                         </h5>
 
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Order Reference</span>
-                            <strong>{{ order.reference }}</strong>
+                        <span class="order-reference">
+                            {{ order.reference }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="order-info">
+
+                        <div class="info-row">
+                            <span class="info-label">Event</span>
+                            <span class="info-value">
+                                {{ order.event.title }}
+                            </span>
                         </div>
 
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Event</span>
-                            <strong>{{ order.event.title }}</strong>
+                        <div class="info-row">
+                            <span class="info-label">Customer</span>
+                            <span class="info-value">
+                                {{ order.customer_name }}
+                            </span>
                         </div>
 
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Customer</span>
-                            <strong>{{ order.customer_name }}</strong>
+                        <div class="info-row">
+                            <span class="info-label">Email</span>
+                            <span class="info-value">
+                                {{ order.customer_email }}
+                            </span>
                         </div>
 
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Email</span>
-                            <strong>{{ order.customer_email }}</strong>
+                        <div class="info-row">
+                            <span class="info-label">Tickets</span>
+                            <span class="info-value">
+                                {{ order.total_quantity }}
+                            </span>
                         </div>
 
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Tickets</span>
-                            <strong>{{ order.total_quantity }}</strong>
+                        <div class="info-row">
+                            <span class="info-label">Payment Method</span>
+                            <span class="info-value">
+                                {{ order.get_payment_method_display }}
+                            </span>
                         </div>
 
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Payment Method</span>
-                            <strong>{{ order.get_payment_method_display }}</strong>
+                        <div class="info-row">
+                            <span class="info-label">Order Status</span>
+                            <span class="info-value">
+                                {% if order.status == 'paid' %}
+                                    <span class="text-success">Paid</span>
+                                {% elif order.status == 'failed' %}
+                                    <span class="text-danger">Failed</span>
+                                {% else %}
+                                    <span class="text-warning">Pending</span>
+                                {% endif %}
+                            </span>
                         </div>
 
-                        <hr>
+                    </div>
 
-                        <div class="d-flex justify-content-between">
-                            <span class="fw-bold">Total Amount</span>
-                            <h4 class="fw-bold text-success">
+
+                    <!-- TOTAL AMOUNT -->
+
+                    <div class="amount-box">
+
+                        <div>
+                            <span>Total Amount Paid</span>
+                            <h3>
                                 {{ order.currency }}
                                 {{ order.total_amount|floatformat:2 }}
-                            </h4>
+                            </h3>
                         </div>
 
-                        {% if latest_payment and latest_payment.mpesa_receipt_number %}
-                            <div class="mt-3">
-                                <span class="text-muted">
-                                    M-Pesa Receipt:
-                                </span>
-                                <strong>
-                                    {{ latest_payment.mpesa_receipt_number }}
-                                </strong>
+                        <i class="bi bi-shield-check fs-1 text-success"></i>
+
+                    </div>
+
+
+                    <!-- MPESA RECEIPT -->
+
+                    {% if latest_payment and latest_payment.mpesa_receipt_number %}
+
+                        <div class="receipt-box">
+
+                            <div class="small text-muted mb-1">
+                                <i class="bi bi-check-circle-fill me-1"></i>
+                                M-Pesa Transaction Receipt
                             </div>
+
+                            <strong>
+                                {{ latest_payment.mpesa_receipt_number }}
+                            </strong>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- PAYMENT ERROR -->
+
+                    {% if latest_payment and latest_payment.status == 'failed' and latest_payment.result_description %}
+
+                        <div class="payment-error">
+
+                            <strong>
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                Payment Information
+                            </strong>
+
+                            <div class="mt-2">
+                                {{ latest_payment.result_description }}
+                            </div>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- PAYMENT INSTRUCTIONS -->
+
+                    {% if order.status != 'paid' and latest_payment and latest_payment.status != 'failed' %}
+
+                        <div class="payment-instructions">
+
+                            <strong class="d-block mb-2">
+                                <i class="bi bi-info-circle me-2 text-primary"></i>
+                                What should I do?
+                            </strong>
+
+                            1. Check your phone for the M-Pesa prompt.<br>
+                            2. Enter your M-Pesa PIN.<br>
+                            3. Wait for Safaricom to confirm the payment.<br>
+                            4. Refresh this page to check your order status.
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- ACTION BUTTONS -->
+
+                    <div class="payment-actions">
+
+                        {% if order.status == 'paid' %}
+
+                            <p class="text-success fw-semibold mb-3">
+                                <i class="bi bi-envelope-check-fill me-1"></i>
+                                Please check your email for your ticket cards
+                                and QR codes.
+                            </p>
+
+                            <a href="{% url 'core:home' %}"
+                               class="btn btn-payment-success">
+                                <i class="bi bi-house-door me-2"></i>
+                                Back to Home
+                            </a>
+
+                        {% elif latest_payment and latest_payment.status == 'failed' %}
+
+                            <form method="POST"
+                                  action="{% url 'payments:mpesa_initiate' order.reference %}">
+                                {% csrf_token %}
+
+                                <button type="submit"
+                                        class="btn btn-payment-success">
+                                    <i class="bi bi-arrow-repeat me-2"></i>
+                                    Try M-Pesa Again
+                                </button>
+                            </form>
+
+                            <a href="{% url 'core:contact' %}"
+                               class="btn btn-outline-secondary">
+                                <i class="bi bi-headset me-2"></i>
+                                Contact Support
+                            </a>
+
+                        {% else %}
+
+                            <button type="button"
+                                    class="btn btn-payment-success"
+                                    id="refreshPayment">
+                                <i class="bi bi-arrow-clockwise me-2"></i>
+                                Refresh Payment Status
+                            </button>
+
+                            <p class="small text-muted mt-2">
+                                Your payment confirmation may take a few moments.
+                            </p>
+
                         {% endif %}
 
                     </div>
 
-                    <hr class="my-4">
 
-                    {% if order.status == 'paid' %}
-
-                        <p class="text-success fw-semibold">
-                            Please check your email for your ticket cards
-                            and QR codes.
-                        </p>
-
-                        <a href="{% url 'core:home' %}"
-                           class="btn btn-success btn-lg rounded-pill px-5">
-                            Back to Home
-                        </a>
-
-                    {% elif latest_payment and latest_payment.status == 'failed' %}
-
-                        <form method="POST"
-                              action="{% url 'payments:mpesa_initiate' order.reference %}">
-                            {% csrf_token %}
-
-                            <button type="submit"
-                                    class="btn btn-success btn-lg rounded-pill px-5">
-                                <i class="bi bi-arrow-repeat me-2"></i>
-                                Try M-Pesa Again
-                            </button>
-                        </form>
-
-                    {% else %}
-
-                        <button type="button"
-                                class="btn btn-outline-success btn-lg rounded-pill px-5"
-                                onclick="window.location.reload();">
-                            <i class="bi bi-arrow-clockwise me-2"></i>
-                            Refresh Payment Status
-                        </button>
-
-                    {% endif %}
+                    <div class="secure-note">
+                        <i class="bi bi-shield-lock-fill me-1"></i>
+                        Your transaction is processed securely through M-Pesa.
+                        <br>
+                        Powered by ShikaTicko.
+                    </div>
 
                 </div>
+
             </div>
 
         </div>
+
     </div>
+
 </div>
 
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const refreshButton = document.getElementById("refreshPayment");
+
+        if (refreshButton) {
+            refreshButton.addEventListener("click", function () {
+                refreshButton.disabled = true;
+                refreshButton.innerHTML =
+                    '<span class="spinner-border spinner-border-sm me-2"></span>Refreshing...';
+
+                window.location.reload();
+            });
+        }
+    });
+</script>
 {% endblock %}
