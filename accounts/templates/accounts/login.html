@@ -1,46 +1,540 @@
+
 {% extends 'base.html' %}
 
-{% block title %}Login | EventHub{% endblock %}
+{% block title %}Login | ShikaTicko{% endblock %}
 
 {% block content %}
 
-<section class="auth-section">
-    <div class="container">
-        <div class="auth-card">
+<style>
+    :root {
+        --login-dark: #101828;
+        --login-navy: #172b4d;
+        --login-green: #198754;
+        --login-green-dark: #146c43;
+        --login-muted: #667085;
+        --login-border: #e4eaf1;
+        --login-bg: #f5f8fc;
+    }
 
-            <div class="auth-header">
-                <div class="auth-icon">
-                    <i class="bi bi-person-circle"></i>
+    .login-page {
+        min-height: calc(100vh - 80px);
+        background: var(--login-bg);
+        padding: 55px 15px;
+        display: flex;
+        align-items: center;
+    }
+
+    .login-wrapper {
+        max-width: 1050px;
+        width: 100%;
+        margin: auto;
+        background: #fff;
+        border-radius: 22px;
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        box-shadow: 0 20px 60px rgba(16, 24, 40, .09);
+        border: 1px solid var(--login-border);
+    }
+
+    /* BRAND PANEL */
+
+    .login-brand-panel {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(145deg, #101828 0%, #172b4d 65%, #146c43 100%);
+        padding: 55px 45px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        color: #fff;
+        min-height: 620px;
+    }
+
+    .login-brand-panel::before {
+        content: "";
+        position: absolute;
+        width: 350px;
+        height: 350px;
+        border: 1px solid rgba(255,255,255,.09);
+        border-radius: 50%;
+        top: -130px;
+        right: -130px;
+    }
+
+    .login-brand-panel::after {
+        content: "";
+        position: absolute;
+        width: 280px;
+        height: 280px;
+        border: 1px solid rgba(255,255,255,.08);
+        border-radius: 50%;
+        bottom: -100px;
+        left: -100px;
+    }
+
+    .login-brand-content,
+    .login-brand-footer,
+    .login-brand-logo {
+        position: relative;
+        z-index: 2;
+    }
+
+    .login-brand-logo {
+        display: inline-flex;
+        align-items: center;
+        gap: 11px;
+        color: white;
+        font-size: 23px;
+        font-weight: 900;
+        letter-spacing: -.5px;
+        text-decoration: none;
+    }
+
+    .login-brand-logo:hover {
+        color: white;
+    }
+
+    .login-brand-logo i {
+        width: 43px;
+        height: 43px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 12px;
+        background: var(--login-green);
+        font-size: 23px;
+    }
+
+    .login-brand-content {
+        margin-top: 75px;
+        margin-bottom: 65px;
+    }
+
+    .login-brand-content .eyebrow {
+        color: #a7e7c0;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-bottom: 18px;
+    }
+
+    .login-brand-content h1 {
+        font-size: clamp(32px, 4vw, 43px);
+        line-height: 1.15;
+        font-weight: 900;
+        margin-bottom: 20px;
+        letter-spacing: -1.5px;
+    }
+
+    .login-brand-content p {
+        color: rgba(255,255,255,.76);
+        font-size: 15px;
+        line-height: 1.9;
+        max-width: 380px;
+    }
+
+    .login-benefits {
+        display: flex;
+        flex-direction: column;
+        gap: 17px;
+        margin-top: 30px;
+    }
+
+    .login-benefit {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: rgba(255,255,255,.9);
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .login-benefit i {
+        color: #8ee0ad;
+        font-size: 17px;
+    }
+
+    .login-brand-footer {
+        color: rgba(255,255,255,.6);
+        font-size: 11px;
+    }
+
+    /* FORM PANEL */
+
+    .login-form-panel {
+        padding: 55px 48px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .login-mobile-brand {
+        display: none;
+    }
+
+    .login-heading {
+        margin-bottom: 32px;
+    }
+
+    .login-heading .welcome-label {
+        display: inline-block;
+        color: var(--login-green);
+        background: #eaf6ef;
+        border-radius: 30px;
+        padding: 7px 12px;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .8px;
+        margin-bottom: 16px;
+    }
+
+    .login-heading h2 {
+        color: var(--login-dark);
+        font-size: 32px;
+        font-weight: 900;
+        letter-spacing: -1px;
+        margin-bottom: 10px;
+    }
+
+    .login-heading p {
+        color: var(--login-muted);
+        font-size: 14px;
+        margin: 0;
+        line-height: 1.7;
+    }
+
+    .login-form .form-label {
+        display: block;
+        color: #344054;
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .login-form .form-control {
+        height: 51px;
+        border: 1px solid var(--login-border);
+        border-radius: 10px;
+        padding: 12px 14px;
+        font-size: 14px;
+        box-shadow: none;
+        background: #fff;
+        transition: .2s;
+    }
+
+    .login-form .form-control:focus {
+        border-color: var(--login-green);
+        box-shadow: 0 0 0 3px rgba(25,135,84,.10);
+    }
+
+    .login-field {
+        margin-bottom: 21px;
+    }
+
+    .login-input-icon {
+        position: relative;
+    }
+
+    .login-input-icon > i {
+        position: absolute;
+        top: 50%;
+        left: 15px;
+        transform: translateY(-50%);
+        color: #98a2b3;
+        z-index: 2;
+    }
+
+    .login-input-icon .form-control {
+        padding-left: 43px;
+    }
+
+    .password-toggle {
+        position: absolute;
+        top: 50%;
+        right: 13px;
+        transform: translateY(-50%);
+        border: none;
+        background: transparent;
+        color: #98a2b3;
+        cursor: pointer;
+        z-index: 3;
+        padding: 5px;
+    }
+
+    .password-toggle:hover {
+        color: var(--login-green);
+    }
+
+    .login-error {
+        border: 0;
+        border-radius: 10px;
+        background: #fff0f0;
+        color: #b42318;
+        padding: 13px 15px;
+        font-size: 13px;
+        margin-bottom: 22px;
+    }
+
+    .login-error ul {
+        margin-bottom: 0;
+        padding-left: 20px;
+    }
+
+    .login-button {
+        height: 52px;
+        border: 0;
+        border-radius: 10px;
+        background: var(--login-green);
+        color: white;
+        width: 100%;
+        font-size: 14px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: .25s;
+        margin-top: 8px;
+    }
+
+    .login-button:hover {
+        background: var(--login-green-dark);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(25,135,84,.2);
+    }
+
+    .login-footer {
+        margin-top: 27px;
+        text-align: center;
+        color: var(--login-muted);
+        font-size: 13px;
+    }
+
+    .login-footer a,
+    .login-organizer-link a {
+        color: var(--login-green);
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .login-footer a:hover,
+    .login-organizer-link a:hover {
+        color: var(--login-green-dark);
+        text-decoration: underline;
+    }
+
+    .login-organizer-link {
+        margin-top: 18px;
+        padding: 15px;
+        background: #f5f8fc;
+        border: 1px solid var(--login-border);
+        border-radius: 11px;
+        text-align: center;
+        color: #475467;
+        font-size: 12px;
+        line-height: 1.8;
+    }
+
+    .login-security-note {
+        margin-top: 24px;
+        text-align: center;
+        color: #98a2b3;
+        font-size: 11px;
+    }
+
+    .login-security-note i {
+        color: var(--login-green);
+        margin-right: 5px;
+    }
+
+    @media (max-width: 767px) {
+        .login-page {
+            padding: 25px 13px;
+        }
+
+        .login-wrapper {
+            grid-template-columns: 1fr;
+            max-width: 470px;
+            border-radius: 18px;
+        }
+
+        .login-brand-panel {
+            display: none;
+        }
+
+        .login-form-panel {
+            padding: 35px 24px;
+        }
+
+        .login-mobile-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--login-navy);
+            font-size: 20px;
+            font-weight: 900;
+            margin-bottom: 35px;
+            text-decoration: none;
+        }
+
+        .login-mobile-brand i {
+            background: var(--login-green);
+            color: white;
+            width: 39px;
+            height: 39px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-heading h2 {
+            font-size: 29px;
+        }
+    }
+</style>
+
+
+<section class="login-page">
+    <div class="login-wrapper">
+
+        <!-- BRAND PANEL -->
+        <div class="login-brand-panel">
+
+            <a href="/" class="login-brand-logo">
+                <i class="bi bi-ticket-perforated-fill"></i>
+                ShikaTicko
+            </a>
+
+            <div class="login-brand-content">
+                <div class="eyebrow">Discover. Book. Experience.</div>
+
+                <h1>Your next great experience starts here.</h1>
+
+                <p>
+                    Sign in to discover exciting events, reserve your tickets
+                    and enjoy unforgettable experiences with ShikaTicko.
+                </p>
+
+                <div class="login-benefits">
+                    <div class="login-benefit">
+                        <i class="bi bi-check-circle-fill"></i>
+                        Discover exciting events
+                    </div>
+
+                    <div class="login-benefit">
+                        <i class="bi bi-check-circle-fill"></i>
+                        Book tickets securely
+                    </div>
+
+                    <div class="login-benefit">
+                        <i class="bi bi-check-circle-fill"></i>
+                        Keep your event tickets in one place
+                    </div>
                 </div>
-
-                <h2>Welcome Back</h2>
-                <p>Login to access your EventHub account.</p>
             </div>
 
-            <form method="POST">
+            <div class="login-brand-footer">
+                © {% now "Y" %} ShikaTicko. All rights reserved.
+            </div>
+
+        </div>
+
+
+        <!-- LOGIN FORM -->
+        <div class="login-form-panel">
+
+            <a href="/" class="login-mobile-brand">
+                <i class="bi bi-ticket-perforated-fill"></i>
+                ShikaTicko
+            </a>
+
+            <div class="login-heading">
+                <span class="welcome-label">Welcome Back</span>
+
+                <h2>Sign in to your account</h2>
+
+                <p>
+                    Enter your login details below to continue.
+                </p>
+            </div>
+
+
+            <form method="POST" class="login-form">
                 {% csrf_token %}
 
                 {% if next %}
                     <input type="hidden" name="next" value="{{ next }}">
                 {% endif %}
 
+
                 {% if form.non_field_errors %}
-                    <div class="alert alert-danger">
+                    <div class="login-error">
+                        <i class="bi bi-exclamation-circle-fill me-1"></i>
+                        Please check your login details.
+
                         {{ form.non_field_errors }}
                     </div>
                 {% endif %}
 
-                {% for field in form %}
-                    <div class="mb-3">
 
-                        <label class="form-label" for="{{ field.id_for_label }}">
+                {% for field in form %}
+                    <div class="login-field">
+
+                        <label class="form-label"
+                               for="{{ field.id_for_label }}">
                             {{ field.label }}
                         </label>
 
-                        {{ field }}
+                        {% if field.name == 'username' %}
+                            <div class="login-input-icon">
+                                <i class="bi bi-person"></i>
+                                <input
+                                    type="text"
+                                    name="{{ field.html_name }}"
+                                    id="{{ field.id_for_label }}"
+                                    class="form-control"
+                                    placeholder="Enter your username"
+                                    value="{{ field.value|default_if_none:'' }}"
+                                    autocomplete="username"
+                                    {% if field.field.required %}required{% endif %}
+                                >
+                            </div>
+
+                        {% elif field.name == 'password' %}
+                            <div class="login-input-icon">
+                                <i class="bi bi-lock"></i>
+
+                                <input
+                                    type="password"
+                                    name="{{ field.html_name }}"
+                                    id="{{ field.id_for_label }}"
+                                    class="form-control"
+                                    placeholder="Enter your password"
+                                    autocomplete="current-password"
+                                    {% if field.field.required %}required{% endif %}
+                                >
+
+                                <button type="button"
+                                        class="password-toggle"
+                                        onclick="toggleLoginPassword('{{ field.id_for_label }}', this)"
+                                        aria-label="Show password">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+
+                        {% else %}
+                            {{ field }}
+                        {% endif %}
+
 
                         {% for error in field.errors %}
-                            <div class="text-danger small mt-1">
+                            <div class="text-danger small mt-2">
+                                <i class="bi bi-exclamation-circle me-1"></i>
                                 {{ error }}
                             </div>
                         {% endfor %}
@@ -48,26 +542,64 @@
                     </div>
                 {% endfor %}
 
-                <button type="submit" class="btn btn-primary w-100 auth-button">
-                    Login
+
+                <button type="submit" class="login-button">
+                    Sign In
+                    <i class="bi bi-arrow-right"></i>
                 </button>
 
             </form>
 
-            <div class="auth-footer">
-                Don't have an account?
-                <a href="{% url 'accounts:register' %}">Create an account</a>
-            </div>
 
-            <div class="auth-switch">
-                Want to organize events?
-                <a href="{% url 'accounts:organizer_register' %}">
-                    Register as an organizer
+            <div class="login-footer">
+                Don't have an account?
+                <a href="{% url 'accounts:register' %}">
+                    Create an account
                 </a>
             </div>
 
+
+            <div class="login-organizer-link">
+                <i class="bi bi-megaphone me-1"></i>
+                Want to organize events?
+                <br>
+                <a href="{% url 'accounts:organizer_register' %}">
+                    Register as an organizer
+                    <i class="bi bi-arrow-up-right"></i>
+                </a>
+            </div>
+
+
+            <div class="login-security-note">
+                <i class="bi bi-shield-lock-fill"></i>
+                Your account information is protected.
+            </div>
+
         </div>
+
     </div>
 </section>
+
+
+<script>
+    function toggleLoginPassword(inputId, button) {
+        const passwordInput = document.getElementById(inputId);
+        const icon = button.querySelector('i');
+
+        if (!passwordInput || !icon) return;
+
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.remove('bi-eye');
+            icon.classList.add('bi-eye-slash');
+            button.setAttribute('aria-label', 'Hide password');
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.remove('bi-eye-slash');
+            icon.classList.add('bi-eye');
+            button.setAttribute('aria-label', 'Show password');
+        }
+    }
+</script>
 
 {% endblock %}

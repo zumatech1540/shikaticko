@@ -190,6 +190,7 @@ def organizer_events(request):
 
 
 
+
 @login_required
 def create_event(request):
     """
@@ -197,6 +198,10 @@ def create_event(request):
     with multiple ticket categories.
 
     Events can be saved as drafts or submitted for approval.
+
+    After successful creation:
+    - Administrators go to the admin dashboard.
+    - Organizers go to the organizer dashboard.
     """
 
     if not is_event_organizer(request.user):
@@ -239,8 +244,10 @@ def create_event(request):
             try:
                 with transaction.atomic():
 
+                    # Assign the currently logged-in user as event owner.
                     event.organizer = request.user
 
+                    # Set the event status.
                     if action == 'submit':
                         event.status = 'pending_review'
                         event.submitted_at = timezone.now()
@@ -255,6 +262,7 @@ def create_event(request):
                     ticket_formset.instance = event
                     ticket_formset.save()
 
+                # Display the appropriate success message.
                 if action == 'submit':
                     messages.success(
                         request,
@@ -269,7 +277,15 @@ def create_event(request):
                         'saved successfully as a draft.'
                     )
 
-                return redirect('events:organizer_events')
+                # Redirect according to the user's account role.
+                if (
+                    request.user.is_superuser
+                    or request.user.is_staff
+                    or getattr(request.user, 'role', '') == 'staff'
+                ):
+                    return redirect('accounts:admin_dashboard')
+
+                return redirect('accounts:organizer_dashboard')
 
             except ValidationError as error:
 

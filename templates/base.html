@@ -100,6 +100,22 @@
             background: rgba(255, 255, 255, 0.11);
         }
 
+        /* DASHBOARD NAVIGATION LINK */
+
+        .main-navbar .dashboard-link {
+            color: #fff;
+            background: rgba(25, 135, 84, 0.25);
+            border: 1px solid rgba(25, 135, 84, 0.55);
+            font-weight: 700;
+        }
+
+        .main-navbar .dashboard-link:hover,
+        .main-navbar .dashboard-link:focus {
+            color: #fff;
+            background: var(--brand-green);
+            border-color: var(--brand-green);
+        }
+
         .navbar-actions {
             display: flex;
             align-items: center;
@@ -353,6 +369,39 @@
                         </a>
                     </li>
 
+                    <!-- ROLE-BASED DASHBOARD LINK -->
+                    {% if user.is_authenticated %}
+
+                        <li class="nav-item">
+                            {% if user.is_superuser or user.is_staff or user.role == 'staff' %}
+
+                                <a class="nav-link dashboard-link"
+                                   href="{% url 'accounts:admin_dashboard' %}">
+                                    <i class="bi bi-speedometer2 me-1"></i>
+                                    Dashboard
+                                </a>
+
+                            {% elif user.role == 'organizer' %}
+
+                                <a class="nav-link dashboard-link"
+                                   href="{% url 'accounts:organizer_dashboard' %}">
+                                    <i class="bi bi-speedometer2 me-1"></i>
+                                    Dashboard
+                                </a>
+
+                            {% else %}
+
+                                <a class="nav-link dashboard-link"
+                                   href="{% url 'core:home' %}">
+                                    <i class="bi bi-person-circle me-1"></i>
+                                    My Account
+                                </a>
+
+                            {% endif %}
+                        </li>
+
+                    {% endif %}
+
                 </ul>
 
                 <!-- USER ACTIONS -->
@@ -508,6 +557,24 @@
                                 Become an Organizer
                             </a>
                         </li>
+
+                        {% if user.is_authenticated %}
+                            <li>
+                                {% if user.is_superuser or user.is_staff or user.role == 'staff' %}
+                                    <a href="{% url 'accounts:admin_dashboard' %}">
+                                        Admin Dashboard
+                                    </a>
+                                {% elif user.role == 'organizer' %}
+                                    <a href="{% url 'accounts:organizer_dashboard' %}">
+                                        Organizer Dashboard
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'core:home' %}">
+                                        My Account
+                                    </a>
+                                {% endif %}
+                            </li>
+                        {% endif %}
 
                         <li>
                             <a href="{% url 'core:contact' %}">

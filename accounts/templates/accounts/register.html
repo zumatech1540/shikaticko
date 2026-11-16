@@ -1,44 +1,605 @@
+
 {% extends 'base.html' %}
 
-{% block title %}{{ page_title }} | EventHub{% endblock %}
+{% block title %}{{ page_title }} | ShikaTicko{% endblock %}
 
 {% block content %}
 
-<section class="auth-section">
-    <div class="container">
-        <div class="auth-card">
+<style>
+    :root {
+        --reg-dark: #101828;
+        --reg-navy: #172b4d;
+        --reg-green: #198754;
+        --reg-green-dark: #146c43;
+        --reg-muted: #667085;
+        --reg-border: #e4eaf1;
+        --reg-bg: #f5f8fc;
+    }
 
-            <div class="auth-header">
-                <div class="auth-icon">
-                    <i class="bi bi-person-plus-fill"></i>
+    .register-page {
+        min-height: calc(100vh - 80px);
+        background: var(--reg-bg);
+        padding: 50px 15px;
+        display: flex;
+        align-items: center;
+    }
+
+    .register-wrapper {
+        max-width: 1080px;
+        width: 100%;
+        margin: auto;
+        background: #fff;
+        border: 1px solid var(--reg-border);
+        border-radius: 22px;
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: .9fr 1.1fr;
+        box-shadow: 0 20px 60px rgba(16, 24, 40, .08);
+    }
+
+    /* BRAND PANEL */
+
+    .register-brand-panel {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(145deg, #101828, #172b4d 65%, #146c43);
+        padding: 48px 42px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        color: #fff;
+        min-height: 650px;
+    }
+
+    .register-brand-panel::before,
+    .register-brand-panel::after {
+        content: "";
+        position: absolute;
+        border: 1px solid rgba(255,255,255,.09);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .register-brand-panel::before {
+        width: 350px;
+        height: 350px;
+        top: -140px;
+        right: -140px;
+    }
+
+    .register-brand-panel::after {
+        width: 280px;
+        height: 280px;
+        bottom: -110px;
+        left: -110px;
+    }
+
+    .register-brand-logo,
+    .register-brand-content,
+    .register-brand-footer {
+        position: relative;
+        z-index: 2;
+    }
+
+    .register-brand-logo {
+        display: inline-flex;
+        align-items: center;
+        gap: 11px;
+        color: #fff;
+        font-size: 23px;
+        font-weight: 900;
+        text-decoration: none;
+    }
+
+    .register-brand-logo:hover {
+        color: #fff;
+    }
+
+    .register-brand-logo i {
+        width: 43px;
+        height: 43px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        background: var(--reg-green);
+        font-size: 23px;
+    }
+
+    .register-brand-content {
+        margin: 65px 0;
+    }
+
+    .register-brand-content .eyebrow {
+        color: #a7e7c0;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-bottom: 18px;
+    }
+
+    .register-brand-content h1 {
+        font-size: clamp(31px, 4vw, 42px);
+        font-weight: 900;
+        line-height: 1.17;
+        letter-spacing: -1.3px;
+        margin-bottom: 20px;
+    }
+
+    .register-brand-content p {
+        color: rgba(255,255,255,.76);
+        font-size: 14px;
+        line-height: 1.9;
+    }
+
+    .register-benefits {
+        display: flex;
+        flex-direction: column;
+        gap: 17px;
+        margin-top: 30px;
+    }
+
+    .register-benefit {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: rgba(255,255,255,.9);
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .register-benefit i {
+        color: #8ee0ad;
+        font-size: 17px;
+    }
+
+    .register-brand-footer {
+        color: rgba(255,255,255,.6);
+        font-size: 11px;
+    }
+
+    /* FORM PANEL */
+
+    .register-form-panel {
+        padding: 45px 48px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .register-mobile-brand {
+        display: none;
+    }
+
+    .register-heading {
+        margin-bottom: 27px;
+    }
+
+    .register-heading .welcome-label {
+        display: inline-block;
+        color: var(--reg-green);
+        background: #eaf6ef;
+        border-radius: 30px;
+        padding: 7px 12px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+        margin-bottom: 15px;
+    }
+
+    .register-heading h2 {
+        color: var(--reg-dark);
+        font-size: 30px;
+        font-weight: 900;
+        letter-spacing: -1px;
+        margin-bottom: 9px;
+    }
+
+    .register-heading p {
+        color: var(--reg-muted);
+        font-size: 13px;
+        line-height: 1.7;
+        margin: 0;
+    }
+
+    .register-form .form-label {
+        display: block;
+        color: #344054;
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 7px;
+    }
+
+    .register-field {
+        margin-bottom: 17px;
+    }
+
+    .register-form input,
+    .register-form select,
+    .register-form textarea {
+        width: 100%;
+        min-height: 47px;
+        border: 1px solid var(--reg-border);
+        border-radius: 9px;
+        padding: 11px 13px;
+        color: var(--reg-dark);
+        font-size: 13px;
+        background: #fff;
+        box-shadow: none;
+        transition: .2s;
+    }
+
+    .register-form textarea {
+        min-height: 100px;
+    }
+
+    .register-form input:focus,
+    .register-form select:focus,
+    .register-form textarea:focus {
+        outline: none;
+        border-color: var(--reg-green);
+        box-shadow: 0 0 0 3px rgba(25,135,84,.10);
+    }
+
+    .register-form input[type="checkbox"] {
+        width: 17px;
+        min-height: 17px;
+        height: 17px;
+        accent-color: var(--reg-green);
+    }
+
+    .register-form input[type="radio"] {
+        width: auto;
+        min-height: auto;
+    }
+
+    .register-form .form-text,
+    .register-form .helptext {
+        display: block;
+        color: #98a2b3;
+        font-size: 11px;
+        line-height: 1.6;
+        margin-top: 6px;
+    }
+
+    .register-form .form-text ul {
+        padding-left: 17px;
+        margin: 5px 0;
+    }
+
+    .register-form .form-text ul li {
+        margin-bottom: 3px;
+    }
+
+    .register-form .errorlist {
+        color: #b42318;
+        font-size: 11px;
+        padding-left: 18px;
+        margin: 6px 0 0;
+    }
+
+    .register-error {
+        border: 0;
+        border-radius: 10px;
+        background: #fff0f0;
+        color: #b42318;
+        padding: 13px 15px;
+        font-size: 12px;
+        margin-bottom: 20px;
+    }
+
+    .register-password-wrapper {
+        position: relative;
+    }
+
+    .register-password-wrapper input {
+        padding-right: 45px;
+    }
+
+    .register-password-toggle {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        border: none;
+        background: transparent;
+        color: #98a2b3;
+        cursor: pointer;
+        padding: 5px;
+    }
+
+    .register-password-toggle:hover {
+        color: var(--reg-green);
+    }
+
+    .register-button {
+        width: 100%;
+        min-height: 51px;
+        border: 0;
+        border-radius: 10px;
+        background: var(--reg-green);
+        color: #fff;
+        font-size: 14px;
+        font-weight: 800;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 9px;
+        margin-top: 10px;
+        transition: .25s;
+    }
+
+    .register-button:hover {
+        background: var(--reg-green-dark);
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(25,135,84,.2);
+    }
+
+    .register-footer {
+        text-align: center;
+        margin-top: 23px;
+        color: var(--reg-muted);
+        font-size: 12px;
+    }
+
+    .register-footer a,
+    .register-switch a {
+        color: var(--reg-green);
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .register-footer a:hover,
+    .register-switch a:hover {
+        text-decoration: underline;
+        color: var(--reg-green-dark);
+    }
+
+    .register-switch {
+        margin-top: 17px;
+        padding: 13px;
+        background: #f5f8fc;
+        border: 1px solid var(--reg-border);
+        border-radius: 10px;
+        text-align: center;
+        color: #475467;
+        font-size: 12px;
+        line-height: 1.8;
+    }
+
+    .register-security-note {
+        margin-top: 20px;
+        text-align: center;
+        color: #98a2b3;
+        font-size: 10px;
+    }
+
+    .register-security-note i {
+        color: var(--reg-green);
+        margin-right: 5px;
+    }
+
+    @media (max-width: 767px) {
+        .register-page {
+            padding: 25px 13px;
+        }
+
+        .register-wrapper {
+            grid-template-columns: 1fr;
+            max-width: 500px;
+            border-radius: 17px;
+        }
+
+        .register-brand-panel {
+            display: none;
+        }
+
+        .register-form-panel {
+            padding: 32px 23px;
+        }
+
+        .register-mobile-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--reg-navy);
+            font-size: 20px;
+            font-weight: 900;
+            text-decoration: none;
+            margin-bottom: 30px;
+        }
+
+        .register-mobile-brand i {
+            width: 39px;
+            height: 39px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--reg-green);
+            color: #fff;
+            border-radius: 10px;
+        }
+
+        .register-heading h2 {
+            font-size: 27px;
+        }
+    }
+</style>
+
+
+<section class="register-page">
+
+    <div class="register-wrapper">
+
+        <!-- BRAND PANEL -->
+        <div class="register-brand-panel">
+
+            <a href="/" class="register-brand-logo">
+                <i class="bi bi-ticket-perforated-fill"></i>
+                ShikaTicko
+            </a>
+
+            <div class="register-brand-content">
+
+                <div class="eyebrow">
+                    {% if account_type == 'organizer' %}
+                        Grow Your Events
+                    {% else %}
+                        Discover. Book. Experience.
+                    {% endif %}
                 </div>
+
+                {% if account_type == 'organizer' %}
+                    <h1>Bring your events to life.</h1>
+
+                    <p>
+                        Join ShikaTicko as an event organizer. Create events,
+                        manage ticket sales and connect with your audience.
+                    </p>
+
+                    <div class="register-benefits">
+                        <div class="register-benefit">
+                            <i class="bi bi-check-circle-fill"></i>
+                            Publish and manage events
+                        </div>
+
+                        <div class="register-benefit">
+                            <i class="bi bi-check-circle-fill"></i>
+                            Manage ticket categories and sales
+                        </div>
+
+                        <div class="register-benefit">
+                            <i class="bi bi-check-circle-fill"></i>
+                            Reach more event attendees
+                        </div>
+                    </div>
+
+                {% else %}
+                    <h1>Your next unforgettable experience awaits.</h1>
+
+                    <p>
+                        Create your ShikaTicko account and discover exciting
+                        events, book tickets and enjoy memorable experiences.
+                    </p>
+
+                    <div class="register-benefits">
+                        <div class="register-benefit">
+                            <i class="bi bi-check-circle-fill"></i>
+                            Discover exciting events
+                        </div>
+
+                        <div class="register-benefit">
+                            <i class="bi bi-check-circle-fill"></i>
+                            Book tickets conveniently
+                        </div>
+
+                        <div class="register-benefit">
+                            <i class="bi bi-check-circle-fill"></i>
+                            Keep your bookings organized
+                        </div>
+                    </div>
+                {% endif %}
+
+            </div>
+
+            <div class="register-brand-footer">
+                © {% now "Y" %} ShikaTicko. All rights reserved.
+            </div>
+
+        </div>
+
+
+        <!-- REGISTRATION FORM -->
+        <div class="register-form-panel">
+
+            <a href="/" class="register-mobile-brand">
+                <i class="bi bi-ticket-perforated-fill"></i>
+                ShikaTicko
+            </a>
+
+
+            <div class="register-heading">
+
+                <span class="welcome-label">
+                    {% if account_type == 'organizer' %}
+                        Organizer Registration
+                    {% else %}
+                        Customer Registration
+                    {% endif %}
+                </span>
 
                 <h2>{{ page_title }}</h2>
 
                 {% if account_type == 'organizer' %}
-                    <p>Create an account to publish and manage events.</p>
+                    <p>
+                        Create your organizer account to publish and manage events.
+                    </p>
                 {% else %}
-                    <p>Create an account to discover and book exciting events.</p>
+                    <p>
+                        Create your account to discover and book exciting events.
+                    </p>
                 {% endif %}
+
             </div>
 
-            <form method="POST">
+
+            <form method="POST" class="register-form">
                 {% csrf_token %}
 
+
                 {% if form.non_field_errors %}
-                    <div class="alert alert-danger">
+                    <div class="register-error">
+                        <i class="bi bi-exclamation-circle-fill me-1"></i>
+                        Please correct the errors below.
                         {{ form.non_field_errors }}
                     </div>
                 {% endif %}
 
-                {% for field in form %}
-                    <div class="mb-3">
 
-                        <label class="form-label" for="{{ field.id_for_label }}">
+                {% for field in form %}
+
+                    <div class="register-field">
+
+                        <label class="form-label"
+                               for="{{ field.id_for_label }}">
                             {{ field.label }}
                         </label>
 
-                        {{ field }}
+
+                        {% if field.field.widget.input_type == 'password' %}
+
+                            <div class="register-password-wrapper">
+
+                                <input
+                                    type="password"
+                                    name="{{ field.html_name }}"
+                                    id="{{ field.id_for_label }}"
+                                    class="form-control"
+                                    autocomplete="new-password"
+                                    {% if field.field.required %}required{% endif %}
+                                >
+
+                                <button
+                                    type="button"
+                                    class="register-password-toggle"
+                                    onclick="toggleRegisterPassword('{{ field.id_for_label }}', this)"
+                                    aria-label="Show password">
+
+                                    <i class="bi bi-eye"></i>
+
+                                </button>
+
+                            </div>
+
+                        {% else %}
+
+                            {{ field }}
+
+                        {% endif %}
+
 
                         {% if field.help_text %}
                             <div class="form-text">
@@ -46,42 +607,95 @@
                             </div>
                         {% endif %}
 
+
                         {% for error in field.errors %}
-                            <div class="text-danger small mt-1">
+                            <div class="text-danger small mt-2">
+                                <i class="bi bi-exclamation-circle me-1"></i>
                                 {{ error }}
                             </div>
                         {% endfor %}
 
                     </div>
+
                 {% endfor %}
 
-                <button type="submit" class="btn btn-primary w-100 auth-button">
+
+                <button type="submit" class="register-button">
                     Create Account
+                    <i class="bi bi-arrow-right"></i>
                 </button>
 
             </form>
 
-            <div class="auth-footer">
+
+            <div class="register-footer">
                 Already have an account?
-                <a href="{% url 'accounts:login' %}">Login here</a>
+                <a href="{% url 'accounts:login' %}">
+                    Sign in here
+                </a>
             </div>
 
-            {% if account_type == 'organizer' %}
-                <div class="auth-switch">
+
+            <div class="register-switch">
+
+                {% if account_type == 'organizer' %}
+
+                    <i class="bi bi-person me-1"></i>
                     Registering as a customer?
-                    <a href="{% url 'accounts:register' %}">Customer registration</a>
-                </div>
-            {% else %}
-                <div class="auth-switch">
-                    Want to organize events?
-                    <a href="{% url 'accounts:organizer_register' %}">
-                        Register as an organizer
+                    <br>
+
+                    <a href="{% url 'accounts:register' %}">
+                        Customer Registration
+                        <i class="bi bi-arrow-up-right"></i>
                     </a>
-                </div>
-            {% endif %}
+
+                {% else %}
+
+                    <i class="bi bi-megaphone me-1"></i>
+                    Want to organize events?
+                    <br>
+
+                    <a href="{% url 'accounts:organizer_register' %}">
+                        Register as an Organizer
+                        <i class="bi bi-arrow-up-right"></i>
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="register-security-note">
+                <i class="bi bi-shield-lock-fill"></i>
+                Your account information is protected.
+            </div>
 
         </div>
+
     </div>
+
 </section>
+
+
+<script>
+    function toggleRegisterPassword(inputId, button) {
+        const input = document.getElementById(inputId);
+        const icon = button.querySelector('i');
+
+        if (!input || !icon) return;
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('bi-eye');
+            icon.classList.add('bi-eye-slash');
+            button.setAttribute('aria-label', 'Hide password');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('bi-eye-slash');
+            icon.classList.add('bi-eye');
+            button.setAttribute('aria-label', 'Show password');
+        }
+    }
+</script>
 
 {% endblock %}
