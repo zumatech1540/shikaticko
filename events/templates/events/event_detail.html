@@ -1,19 +1,413 @@
 
 {% extends 'base.html' %}
 
-{% block title %}{{ event.title }} | EventHub{% endblock %}
+{% block title %}{{ event.title }} | ShikaTicko{% endblock %}
 
 {% block content %}
 
+<style>
+    :root {
+        --st-dark: #101828;
+        --st-navy: #172b4d;
+        --st-green: #198754;
+        --st-green-dark: #146c43;
+        --st-light: #f5f8fc;
+        --st-muted: #667085;
+        --st-border: #e8edf3;
+    }
+
+    .event-detail-page {
+        background: var(--st-light);
+        min-height: 100vh;
+        padding-bottom: 60px;
+    }
+
+    .event-detail-top {
+        padding: 22px 0;
+    }
+
+    .event-back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        color: var(--st-muted);
+        text-decoration: none;
+        font-weight: 600;
+        transition: .2s;
+    }
+
+    .event-back-link:hover {
+        color: var(--st-green);
+        transform: translateX(-3px);
+    }
+
+    .event-detail-container {
+        max-width: 1240px;
+    }
+
+    /* Main event content */
+
+    .event-main-card {
+        background: #fff;
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px solid var(--st-border);
+        box-shadow: 0 8px 30px rgba(16, 24, 40, .04);
+    }
+
+    .event-detail-cover {
+        width: 100%;
+        height: 430px;
+        background: #e9eef5;
+        overflow: hidden;
+    }
+
+    .event-detail-cover img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        background: #101828;
+    }
+
+    .event-image-placeholder {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #172b4d, #198754);
+        color: white;
+        font-size: 90px;
+    }
+
+    .event-detail-content {
+        padding: 35px;
+    }
+
+    .event-detail-labels {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px;
+        margin-bottom: 20px;
+    }
+
+    .event-detail-labels span {
+        display: inline-flex;
+        align-items: center;
+        padding: 7px 13px;
+        border-radius: 30px;
+        background: #eef3f8;
+        color: var(--st-navy);
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .event-detail-labels .free-label {
+        background: #e8f7ee;
+        color: var(--st-green-dark);
+    }
+
+    .event-detail-content h1 {
+        color: var(--st-dark);
+        font-size: clamp(28px, 4vw, 40px);
+        font-weight: 800;
+        line-height: 1.2;
+        margin-bottom: 15px;
+    }
+
+    .event-detail-short-description {
+        color: var(--st-muted);
+        font-size: 16px;
+        line-height: 1.8;
+        margin-bottom: 25px;
+    }
+
+    .event-section {
+        margin-top: 32px;
+    }
+
+    .event-section h2 {
+        color: var(--st-dark);
+        font-size: 21px;
+        font-weight: 800;
+        margin-bottom: 17px;
+    }
+
+    .event-long-description {
+        color: #475467;
+        font-size: 15px;
+        line-height: 1.9;
+        overflow-wrap: anywhere;
+    }
+
+    .event-divider {
+        border: 0;
+        border-top: 1px solid var(--st-border);
+        margin: 28px 0;
+    }
+
+    /* Gallery */
+
+    .event-gallery-section {
+        margin-top: 38px;
+    }
+
+    .event-gallery-image {
+        background: white;
+        border: 1px solid var(--st-border);
+        border-radius: 13px;
+        overflow: hidden;
+        height: 100%;
+    }
+
+    .event-gallery-image img {
+        width: 100%;
+        height: 190px;
+        object-fit: cover;
+        display: block;
+        transition: transform .3s ease;
+    }
+
+    .event-gallery-image:hover img {
+        transform: scale(1.04);
+    }
+
+    .event-gallery-image small {
+        display: block;
+        padding: 11px 13px;
+        color: var(--st-muted);
+        font-size: 12px;
+    }
+
+    /* Booking sidebar */
+
+    .event-booking-card {
+        background: #fff;
+        border: 1px solid var(--st-border);
+        border-radius: 18px;
+        padding: 27px;
+        box-shadow: 0 8px 30px rgba(16, 24, 40, .05);
+        position: sticky;
+        top: 25px;
+    }
+
+    .event-booking-heading {
+        margin-bottom: 25px;
+    }
+
+    .event-booking-heading span {
+        color: var(--st-green);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+    }
+
+    .event-booking-heading h3 {
+        color: var(--st-dark);
+        font-size: 25px;
+        font-weight: 800;
+        margin: 8px 0 0;
+    }
+
+    .event-information-item {
+        display: flex;
+        gap: 14px;
+        margin-bottom: 23px;
+        align-items: flex-start;
+    }
+
+    .event-information-icon {
+        width: 43px;
+        height: 43px;
+        min-width: 43px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #eaf6ef;
+        color: var(--st-green);
+        border-radius: 12px;
+        font-size: 19px;
+    }
+
+    .event-information-item small {
+        display: block;
+        color: #98a2b3;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        margin-bottom: 5px;
+    }
+
+    .event-information-item strong {
+        display: block;
+        color: var(--st-dark);
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.5;
+    }
+
+    .event-information-item span {
+        display: block;
+        color: var(--st-muted);
+        font-size: 12px;
+        line-height: 1.6;
+        margin-top: 4px;
+    }
+
+    .event-ticket-summary {
+        background: #f7fafc;
+        border: 1px solid var(--st-border);
+        border-radius: 13px;
+        padding: 18px;
+        margin: 22px 0;
+    }
+
+    .event-ticket-summary > span {
+        display: block;
+        color: var(--st-muted);
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 7px;
+    }
+
+    .event-ticket-summary strong {
+        display: block;
+        color: var(--st-dark);
+        font-size: 21px;
+        font-weight: 800;
+    }
+
+    .event-ticket-summary .free-price {
+        color: var(--st-green);
+    }
+
+    .event-ticket-summary small {
+        display: block;
+        color: var(--st-muted);
+        font-size: 12px;
+        margin-top: 6px;
+    }
+
+    .event-booking-btn {
+        width: 100%;
+        min-height: 51px;
+        border: 0;
+        border-radius: 11px;
+        background: var(--st-green);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 800;
+        transition: .25s;
+    }
+
+    .event-booking-btn:hover {
+        background: var(--st-green-dark);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 7px 18px rgba(25, 135, 84, .2);
+    }
+
+    .event-map-link {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        margin-top: 15px;
+        padding: 12px;
+        border: 1px solid var(--st-border);
+        border-radius: 10px;
+        color: var(--st-navy);
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: .2s;
+    }
+
+    .event-map-link:hover {
+        background: #f5f8fc;
+        color: var(--st-green);
+    }
+
+    .event-secure-note {
+        margin-top: 23px;
+        padding-top: 17px;
+        border-top: 1px solid var(--st-border);
+        color: var(--st-muted);
+        text-align: center;
+        font-size: 11px;
+    }
+
+    .event-secure-note i {
+        color: var(--st-green);
+        margin-right: 5px;
+    }
+
+    .event-organizer-note {
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 12px;
+        background: #f8fafc;
+        color: var(--st-muted);
+        font-size: 12px;
+        line-height: 1.7;
+    }
+
+    @media (max-width: 991px) {
+        .event-booking-card {
+            position: static;
+        }
+
+        .event-detail-cover {
+            height: 350px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .event-detail-top {
+            padding: 15px 0;
+        }
+
+        .event-detail-cover {
+            height: 240px;
+        }
+
+        .event-detail-content {
+            padding: 22px 18px;
+        }
+
+        .event-detail-content h1 {
+            font-size: 27px;
+        }
+
+        .event-booking-card {
+            padding: 22px 18px;
+        }
+
+        .event-gallery-image img {
+            height: 145px;
+        }
+    }
+</style>
+
+
 <div class="event-detail-page">
 
+    <!-- BACK NAVIGATION -->
     <div class="event-detail-top">
-        <div class="container">
-            <a href="{% url 'events:public_events' %}" class="event-back-link"></a>
-                <i class="bi bi-arrow-left"></i> Back to Events
+        <div class="container event-detail-container">
+            <a href="{% url 'events:public_events' %}" class="event-back-link">
+                <i class="bi bi-arrow-left"></i>
+                Back to Events
             </a>
         </div>
     </div>
+
 
     <div class="container event-detail-container">
         <div class="row g-4">
@@ -21,67 +415,126 @@
             <!-- MAIN EVENT CONTENT -->
             <div class="col-lg-8">
 
-                <div class="event-detail-cover">
-                    {% if event.cover_image %}
-                        <img src="{{ event.cover_image.url }}"
-                             alt="{{ event.title }}">
-                    {% else %}
-                        <div class="event-image-placeholder">
-                            <i class="bi bi-calendar-event"></i>
-                        </div>
-                    {% endif %}
-                </div>
+                <div class="event-main-card">
 
-                <div class="event-detail-content">
-                    <div class="event-detail-labels">
-                        {% if event.category %}
-                            <span>{{ event.category.name }}</span>
-                        {% endif %}
-                        <span>{{ event.get_event_type_display }}</span>
-                        {% if event.entry_type == 'free' %}
-                            <span class="free-label">Free Event</span>
+                    <!-- EVENT POSTER -->
+                    <div class="event-detail-cover">
+                        {% if event.cover_image %}
+                            <img src="{{ event.cover_image.url }}"
+                                 alt="{{ event.title }}">
                         {% else %}
-                            <span>Paid Event</span>
+                            <div class="event-image-placeholder">
+                                <i class="bi bi-calendar-event"></i>
+                            </div>
                         {% endif %}
                     </div>
 
-                    <h1>{{ event.title }}</h1>
 
-                    <p class="event-detail-short-description">
-                        {{ event.short_description }}
-                    </p>
+                    <div class="event-detail-content">
 
+                        <!-- EVENT LABELS -->
+                        <div class="event-detail-labels">
 
-                    <hr>
+                            {% if event.category %}
+                                <span>
+                                    <i class="bi bi-tag me-1"></i>
+                                    {{ event.category.name }}
+                                </span>
+                            {% endif %}
 
-                    <h2>About This Event</h2>
-                    <div class="event-long-description">
-                        {{ event.description|linebreaks }}
-                    </div>
+                            <span>
+                                {{ event.get_event_type_display }}
+                            </span>
 
-                    {% if event.gallery_images.all %}
-                    <div class="event-gallery-section">
-                        <h2>Event Gallery</h2>
-                        <div class="row g-3">
-                            {% for gallery_image in event.gallery_images.all %}
-                            <div class="col-6 col-md-4">
-                                <div class="event-gallery-image">
-                                    <img src="{{ gallery_image.image.url }}"
-                                         alt="{{ gallery_image.caption|default:event.title }}">
-                                    {% if gallery_image.caption %}
-                                        <small>{{ gallery_image.caption }}</small>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            {% endfor %}
+                            {% if event.entry_type == 'free' %}
+                                <span class="free-label">
+                                    <i class="bi bi-check-circle me-1"></i>
+                                    Free Event
+                                </span>
+                            {% else %}
+                                <span>
+                                    <i class="bi bi-ticket-perforated me-1"></i>
+                                    Paid Event
+                                </span>
+                            {% endif %}
+
                         </div>
+
+
+                        <!-- TITLE AND INTRODUCTION -->
+                        <h1>{{ event.title }}</h1>
+
+                        {% if event.short_description %}
+                            <p class="event-detail-short-description">
+                                {{ event.short_description }}
+                            </p>
+                        {% endif %}
+
+
+                        <hr class="event-divider">
+
+
+                        <!-- ABOUT EVENT -->
+                        <section class="event-section">
+                            <h2>
+                                <i class="bi bi-info-circle me-2 text-success"></i>
+                                About This Event
+                            </h2>
+
+                            <div class="event-long-description">
+                                {% if event.description %}
+                                    {{ event.description|linebreaks }}
+                                {% else %}
+                                    <p>More information about this event will be announced soon.</p>
+                                {% endif %}
+                            </div>
+                        </section>
+
+
+                        <!-- EVENT GALLERY -->
+                        {% with gallery=event.gallery_images.all %}
+                            {% if gallery %}
+                                <section class="event-gallery-section">
+                                    <hr class="event-divider">
+
+                                    <h2>
+                                        <i class="bi bi-images me-2 text-success"></i>
+                                        Event Gallery
+                                    </h2>
+
+                                    <div class="row g-3">
+                                        {% for gallery_image in gallery %}
+                                            {% if gallery_image.image %}
+                                                <div class="col-6 col-md-4">
+                                                    <div class="event-gallery-image">
+                                                        <img
+                                                            src="{{ gallery_image.image.url }}"
+                                                            alt="{{ gallery_image.caption|default:event.title }}"
+                                                            loading="lazy">
+
+                                                        {% if gallery_image.caption %}
+                                                            <small>
+                                                                {{ gallery_image.caption }}
+                                                            </small>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </section>
+                            {% endif %}
+                        {% endwith %}
+
                     </div>
-                    {% endif %}
                 </div>
+
             </div>
 
-            <!-- EVENT INFORMATION -->
+
+            <!-- EVENT INFORMATION / BOOKING SIDEBAR -->
             <div class="col-lg-4">
+
                 <aside class="event-booking-card">
 
                     <div class="event-booking-heading">
@@ -89,20 +542,28 @@
                         <h3>Plan Your Visit</h3>
                     </div>
 
+
+                    <!-- DATE -->
                     <div class="event-information-item">
                         <div class="event-information-icon">
                             <i class="bi bi-calendar-event"></i>
                         </div>
+
                         <div>
                             <small>Event Date</small>
-                            <strong>{{ event.start_datetime|date:"l, d F Y" }}</strong>
+                            <strong>
+                                {{ event.start_datetime|date:"l, d F Y" }}
+                            </strong>
                         </div>
                     </div>
 
+
+                    <!-- TIME -->
                     <div class="event-information-item">
                         <div class="event-information-icon">
                             <i class="bi bi-clock"></i>
                         </div>
+
                         <div>
                             <small>Event Time</small>
                             <strong>
@@ -113,12 +574,16 @@
                         </div>
                     </div>
 
+
+                    <!-- LOCATION -->
                     <div class="event-information-item">
                         <div class="event-information-icon">
                             <i class="bi bi-geo-alt"></i>
                         </div>
+
                         <div>
                             <small>Location</small>
+
                             <strong>
                                 {% if event.event_type == 'online' %}
                                     Online Event
@@ -126,73 +591,117 @@
                                     {{ event.venue_name|default:"Venue to be announced" }}
                                 {% endif %}
                             </strong>
-                            <span>
-                                {{ event.venue_address }}
-                                {% if event.town %}, {{ event.town }}{% endif %}
-                                {% if event.county %}, {{ event.county }}{% endif %}
-                            </span>
+
+                            {% if event.event_type != 'online' %}
+                                <span>
+                                    {% if event.venue_address %}
+                                        {{ event.venue_address }}
+                                    {% endif %}
+
+                                    {% if event.town %}
+                                        {% if event.venue_address %}, {% endif %}
+                                        {{ event.town }}
+                                    {% endif %}
+
+                                    {% if event.county %}
+                                        {% if event.town or event.venue_address %}, {% endif %}
+                                        {{ event.county }}
+                                    {% endif %}
+                                </span>
+                            {% endif %}
                         </div>
                     </div>
 
+
+                    <!-- CAPACITY -->
                     {% if event.capacity %}
-                    <div class="event-information-item">
-                        <div class="event-information-icon">
-                            <i class="bi bi-people"></i>
+                        <div class="event-information-item">
+                            <div class="event-information-icon">
+                                <i class="bi bi-people"></i>
+                            </div>
+
+                            <div>
+                                <small>Event Capacity</small>
+                                <strong>{{ event.capacity }} Attendees</strong>
+                            </div>
                         </div>
-                        <div>
-                            <small>Event Capacity</small>
-                            <strong>{{ event.capacity }} Attendees</strong>
-                        </div>
-                    </div>
                     {% endif %}
 
-                    <hr>
 
+                    <hr class="event-divider">
+
+
+                    <!-- TICKET SUMMARY -->
                     <div class="event-ticket-summary">
+                        <span>ENTRY INFORMATION</span>
+
                         {% if event.entry_type == 'free' %}
-                            <span>Entry</span>
-                            <strong class="free-price">FREE</strong>
+                            <strong class="free-price">
+                                <i class="bi bi-check-circle-fill me-1"></i>
+                                FREE ENTRY
+                            </strong>
+                            <small>Registration may be required.</small>
                         {% else %}
-                            <span>Entry</span>
-                            <strong>Paid Tickets</strong>
-                            <small>Ticket options and prices will be shown here.</small>
+                            <strong>
+                                <i class="bi bi-ticket-perforated me-1"></i>
+                                Paid Tickets
+                            </strong>
+                            <small>
+                                View available ticket categories and prices when booking.
+                            </small>
                         {% endif %}
                     </div>
 
+
+                    <!-- BOOKING ACTION -->
                     {% if event.event_type == 'online' and event.online_event_url %}
                         <a href="{{ event.online_event_url }}"
                            target="_blank"
                            rel="noopener noreferrer"
                            class="event-booking-btn">
-                            Join Online Event <i class="bi bi-box-arrow-up-right"></i>
+                            Join Online Event
+                            <i class="bi bi-box-arrow-up-right"></i>
                         </a>
                     {% else %}
-                        <button type="button"
-                                class="event-booking-btn"
-                                disabled>
-                            Ticket Booking Coming Soon
-                        </button>
+                        <a href="{% url 'events:event_booking' event.slug %}"
+                           class="event-booking-btn">
+                            <i class="bi bi-ticket-perforated"></i>
+                            Book Tickets
+                        </a>
                     {% endif %}
 
+
+                    <!-- MAP -->
                     {% if event.google_maps_url %}
                         <a href="{{ event.google_maps_url }}"
                            target="_blank"
                            rel="noopener noreferrer"
                            class="event-map-link">
-                            <i class="bi bi-map"></i> View Location on Map
+                            <i class="bi bi-map"></i>
+                            View Location on Map
                         </a>
                     {% endif %}
 
+
+                    <!-- TRUST NOTE -->
                     <div class="event-secure-note">
                         <i class="bi bi-shield-check"></i>
-                        Secure event information on EventHub.
+                        Secure ticket booking with ShikaTicko.
+                    </div>
+
+
+                    <div class="event-organizer-note">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Please check the event date, time and venue before completing your booking.
                     </div>
 
                 </aside>
+
             </div>
 
         </div>
     </div>
+
 </div>
 
 {% endblock %}
